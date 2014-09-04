@@ -11,6 +11,14 @@ then run:
 cargo build
 ```
 
+## Running
+
+Once the project is built:
+
+```
+target/rustyboy /path/to/rom
+```
+
 ## License
 
 MIT.
