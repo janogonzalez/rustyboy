@@ -35,30 +35,28 @@ impl Cpu {
 
     pub fn step(&mut self) {
         let opcode = self.read_next_byte();
-        self.cycles += 4;
 
         println!("Executing: {:#04X}", opcode);
 
         match opcode {
-            0x00 => {},
-            0x3E => {
-                let value = self.read_next_byte();
+            0x00 => {
                 self.cycles += 4;
-                self.a = value;
+            },
+            0x3E => {
+                self.a = self.read_next_byte();
+                self.cycles += 8;
                 println!("  a: {:#04X}", self.a);
             },
             0xC3 => {
                 self.pc = self.read_next_word();
+                self.cycles += 16;
                 println!("  address: {:#06X}", self.pc);
-                self.cycles += 12;
             },
             0xE0 => {
-                let value = self.read_next_byte();
-                self.memory.write_byte(0xFF00 + value as u16, self.a);
-                println!("  memory[{:#06X}] = A ({:#04X})",
-                         0xFF00 + value as u16,
-                         self.a);
-                self.cycles += 8;
+                let addr = 0xFF00 + self.read_next_byte() as u16;
+                self.memory.write_byte(addr, self.a);
+                self.cycles += 12;
+                println!("  memory[{:#06X}] = A ({:#04X})", addr, self.a);
             },
             0xF3 => {
                 println!("  implement interrupts stuff...");
