@@ -17,4 +17,9 @@ impl Memory {
             _ => 0x00
         }
     }
+
+    pub fn read_word(&self, address: u16) -> u16 {
+        self.read_byte(address) as u16 |
+            self.read_byte(address + 1) as u16 << 8
+    }
 }

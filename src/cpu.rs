@@ -43,8 +43,7 @@ impl Cpu {
         match opcode {
             0x00 => {},
             0xC3 => {
-                self.pc = self.memory.read_byte(self.pc) as u16 |
-                    self.memory.read_byte(self.pc + 1) as u16 << 8;
+                self.pc = self.memory.read_word(self.pc);
                 println!("  address: {:#06X}", self.pc);
                 self.cycles += 12;
             },
