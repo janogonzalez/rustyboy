@@ -13,7 +13,7 @@ impl Memory {
 
     pub fn read_byte(&self, address: u16) -> u8 {
         match address {
-            0x0000..0x3FFF => self.rom.bytes[address.to_uint().unwrap()],
+            0x0000..0x3FFF => self.rom.bytes[address as uint],
             _ => 0x00
         }
     }
