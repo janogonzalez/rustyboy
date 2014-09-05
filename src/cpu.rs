@@ -34,8 +34,7 @@ impl Cpu {
     }
 
     pub fn step(&mut self) {
-        let opcode = self.memory.read_byte(self.pc);
-        self.pc += 1;
+        let opcode = self.read_next_byte();
         self.cycles += 4;
 
         println!("Executing: {:#04X}", opcode);
@@ -43,24 +42,22 @@ impl Cpu {
         match opcode {
             0x00 => {},
             0x3E => {
-                let value = self.memory.read_byte(self.pc);
-                self.pc += 1;
+                let value = self.read_next_byte();
                 self.cycles += 4;
                 self.a = value;
                 println!("  a: {:#04X}", self.a);
             },
             0xC3 => {
-                self.pc = self.memory.read_word(self.pc);
+                self.pc = self.read_next_word();
                 println!("  address: {:#06X}", self.pc);
                 self.cycles += 12;
             },
             0xE0 => {
-                let value = self.memory.read_byte(self.pc);
+                let value = self.read_next_byte();
                 self.memory.write_byte(0xFF00 + value as u16, self.a);
                 println!("  memory[{:#06X}] = A ({:#04X})",
                          0xFF00 + value as u16,
                          self.a);
-                self.pc += 1;
                 self.cycles += 8;
             },
             0xF3 => {
@@ -68,6 +65,18 @@ impl Cpu {
             },
             _ => fail!("Opcode not implemented: {:#04X}", opcode)
         }
+    }
+
+    fn read_next_byte(&mut self) -> u8 {
+        let value = self.memory.read_byte(self.pc);
+        self.pc += 1;
+        value
+    }
+
+    fn read_next_word(&mut self) -> u16 {
+        let value = self.memory.read_word(self.pc);
+        self.pc += 2;
+        value
     }
 
     pub fn run(&mut self) {
