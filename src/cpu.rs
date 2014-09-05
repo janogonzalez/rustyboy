@@ -42,10 +42,29 @@ impl Cpu {
 
         match opcode {
             0x00 => {},
+            0x3E => {
+                let value = self.memory.read_byte(self.pc);
+                self.pc += 1;
+                self.cycles += 4;
+                self.a = value;
+                println!("  a: {:#04X}", self.a);
+            },
             0xC3 => {
                 self.pc = self.memory.read_word(self.pc);
                 println!("  address: {:#06X}", self.pc);
                 self.cycles += 12;
+            },
+            0xE0 => {
+                let value = self.memory.read_byte(self.pc);
+                self.memory.write_byte(0xFF00 + value as u16, self.a);
+                println!("  memory[{:#06X}] = A ({:#04X})",
+                         0xFF00 + value as u16,
+                         self.a);
+                self.pc += 1;
+                self.cycles += 8;
+            },
+            0xF3 => {
+                println!("  implement interrupts stuff...");
             },
             _ => fail!("Opcode not implemented: {:#04X}", opcode)
         }
