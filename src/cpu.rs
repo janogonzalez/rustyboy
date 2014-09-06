@@ -655,9 +655,9 @@ impl Cpu {
         self.cycles += CPU_CYCLES[opcode as uint];
         println!("<A = {:#04X}, B = {:#04X}, C = {:#04X}, D = {:#04X} \
                    E = {:#04X}, H = {:#04X}, L = {:#04X}, FLAGS = {:#08t} \
-                   Cycles = {}>",
+                   PC = {:#08X} SP = {:#08X} Cycles = {}>",
                  self.a, self.b, self.c, self.d, self.e, self.h, self.l,
-                 self.f, self.cycles);
+                 self.f, self.pc, self.sp, self.cycles);
     }
 
     fn read_next_byte(&mut self) -> u8 {
