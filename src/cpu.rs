@@ -17,14 +17,14 @@ pub struct Cpu {
 
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x00
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x10
+    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, // 0x00
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, // 0x10
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x20
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x30
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x40
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x50
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x60
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x70
+    0, 0, 0, 0, 0, 0,12, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x30
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
+    8, 8, 8, 8, 8, 8, 0, 8, 4, 4, 4, 4, 4, 4, 8, 4, // 0x70
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x80
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x90
     0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
@@ -32,7 +32,7 @@ static CPU_CYCLES: [uint, ..256] = [
     0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
    12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
-   12, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xF0
+   12, 0, 0, 8, 0, 0, 0, 0, 0, 0,16, 0, 0, 0, 0, 0, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -62,10 +62,111 @@ impl Cpu {
 
         match opcode {
             0x00 => {},
+            0x0A => { self.a = self.memory.read_byte(self.bc()); },
+            0x1A => { self.a = self.memory.read_byte(self.de()); },
+            0x36 => {
+                let addr = self.hl();
+                let val = self.read_next_byte();
+                self.memory.write_byte(addr, val);
+            },
             0x3E => {
                 self.a = self.read_next_byte();
                 println!("  a: {:#04X}", self.a);
             },
+
+            0x40 => { self.b = self.b; },
+            0x41 => { self.b = self.c; },
+            0x42 => { self.b = self.d; },
+            0x43 => { self.b = self.e; },
+            0x44 => { self.b = self.h; },
+            0x45 => { self.b = self.l; },
+            0x46 => { self.b = self.memory.read_byte(self.hl()); },
+            0x47 => { self.b = self.a; },
+
+            0x48 => { self.c = self.b; },
+            0x49 => { self.c = self.c; },
+            0x4A => { self.c = self.d; },
+            0x4B => { self.c = self.e; },
+            0x4C => { self.c = self.h; },
+            0x4D => { self.c = self.l; },
+            0x4E => { self.c = self.memory.read_byte(self.hl()); },
+            0x4F => { self.c = self.a; },
+
+            0x50 => { self.d = self.b; },
+            0x51 => { self.d = self.c; },
+            0x52 => { self.d = self.d; },
+            0x53 => { self.d = self.e; },
+            0x54 => { self.d = self.h; },
+            0x55 => { self.d = self.l; },
+            0x56 => { self.d = self.memory.read_byte(self.hl()); },
+            0x57 => { self.d = self.a; },
+
+            0x58 => { self.e = self.b; },
+            0x59 => { self.e = self.c; },
+            0x5A => { self.e = self.d; },
+            0x5B => { self.e = self.e; },
+            0x5C => { self.e = self.h; },
+            0x5D => { self.e = self.l; },
+            0x5E => { self.e = self.memory.read_byte(self.hl()); },
+            0x5F => { self.e = self.a; },
+
+            0x60 => { self.h = self.b; },
+            0x61 => { self.h = self.c; },
+            0x62 => { self.h = self.d; },
+            0x63 => { self.h = self.e; },
+            0x64 => { self.h = self.h; },
+            0x65 => { self.h = self.l; },
+            0x66 => { self.h = self.memory.read_byte(self.hl()); },
+            0x67 => { self.h = self.a; },
+
+            0x68 => { self.l = self.b; },
+            0x69 => { self.l = self.c; },
+            0x6A => { self.l = self.d; },
+            0x6B => { self.l = self.e; },
+            0x6C => { self.l = self.h; },
+            0x6D => { self.l = self.l; },
+            0x6E => { self.l = self.memory.read_byte(self.hl()); },
+            0x6F => { self.l = self.a; },
+
+            0x70 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.b);
+            },
+            0x71 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.c);
+            },
+            0x72 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.d);
+            },
+            0x73 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.e);
+            },
+            0x74 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.h);
+            },
+            0x75 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.l);
+            },
+
+            0x77 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.a);
+            },
+
+            0x78 => { self.a = self.b; },
+            0x79 => { self.a = self.c; },
+            0x7A => { self.a = self.d; },
+            0x7B => { self.a = self.e; },
+            0x7C => { self.a = self.h; },
+            0x7D => { self.a = self.l; },
+            0x7E => { self.a = self.memory.read_byte(self.hl()); },
+            0x7F => { self.a = self.a; },
+
             0xA8 => {
                 let val = self.b;
                 self.xor(val);
@@ -121,6 +222,10 @@ impl Cpu {
             0xF3 => {
                 println!("  implement interrupts stuff...");
             },
+            0xFA => {
+                let addr = self.read_next_word();
+                self.a = self.memory.read_byte(addr);
+            },
             _ => fail!("Opcode not implemented: {:#04X}", opcode)
         }
 
@@ -143,6 +248,14 @@ impl Cpu {
     fn xor(&mut self, value: u8) {
         self.a ^= value;
         self.f = if self.a == 0 { Z_FLAG } else { 0x0000 };
+    }
+
+    fn bc(&self) -> u16 {
+        self.b as u16 << 8 | self.c as u16
+    }
+
+    fn de(&self) -> u16 {
+        self.d as u16 << 8 | self.e as u16
     }
 
     fn hl(&self) -> u16 {
