@@ -25,7 +25,7 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
     8, 8, 8, 8, 8, 8, 0, 8, 4, 4, 4, 4, 4, 4, 8, 4, // 0x70
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x80
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x80
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x90
     0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0
@@ -36,6 +36,9 @@ static CPU_CYCLES: [uint, ..256] = [
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
+static N_FLAG: u8 = 0b0100_0000;
+static H_FLAG: u8 = 0b0010_0000;
+static C_FLAG: u8 = 0b0001_0000;
 
 impl Cpu {
     pub fn new(memory: memory::Memory) -> Cpu {
@@ -167,6 +170,73 @@ impl Cpu {
             0x7E => { self.a = self.memory.read_byte(self.hl()); },
             0x7F => { self.a = self.a; },
 
+            0x80 => {
+                let val = self.b;
+                self.add(val);
+            },
+            0x81 => {
+                let val = self.c;
+                self.add(val);
+            },
+            0x82 => {
+                let val = self.d;
+                self.add(val);
+            },
+            0x83 => {
+                let val = self.e;
+                self.add(val);
+            },
+            0x84 => {
+                let val = self.h;
+                self.add(val);
+            },
+            0x85 => {
+                let val = self.l;
+                self.add(val);
+            },
+            0x86 => {
+                let val = self.memory.read_byte(self.hl());
+                self.add(val);
+            },
+            0x87 => {
+                let val = self.a;
+                self.add(val);
+            },
+
+            0x88 => {
+                let val = self.b;
+                self.adc(val);
+            },
+            0x89 => {
+                let val = self.c;
+                self.adc(val);
+            },
+            0x8A => {
+                let val = self.d;
+                self.adc(val);
+            },
+            0x8B => {
+                let val = self.e;
+                self.adc(val);
+            },
+            0x8C => {
+                let val = self.h;
+                self.adc(val);
+            },
+            0x8D => {
+                let val = self.l;
+                self.adc(val);
+            },
+            0x8E => {
+                let val = self.memory.read_byte(self.hl());
+                self.adc(val);
+            },
+            0x8F => {
+                let val = self.a;
+                self.adc(val);
+            },
+
+
             0xA8 => {
                 let val = self.b;
                 self.xor(val);
@@ -243,6 +313,25 @@ impl Cpu {
         let value = self.memory.read_word(self.pc);
         self.pc += 2;
         value
+    }
+
+    fn add(&mut self, value: u8) {
+        let result = self.a + value;
+        self.f = 0x0000;
+        if result == 0 { self.f |= Z_FLAG };
+        if (self.a & 0xF + value & 0xF) > 0xF { self.f |= H_FLAG }
+        if (self.a as u16 + value as u16) > 0xFF { self.f |= C_FLAG }
+        self.a = result;
+    }
+
+    fn adc(&mut self, value: u8) {
+        let c = (self.f & C_FLAG) >> 4;
+        let result = self.a + value + c;
+        self.f = 0x0000;
+        if result == 0 { self.f |= Z_FLAG };
+        if (self.a & 0xF + value & 0xF + c) > 0xF { self.f |= H_FLAG }
+        if (self.a as u16 + value as u16 + c as u16) > 0xFF { self.f |= C_FLAG }
+        self.a = result;
     }
 
     fn xor(&mut self, value: u8) {
