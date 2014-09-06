@@ -17,9 +17,9 @@ pub struct Cpu {
 
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, // 0x00
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, // 0x10
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x20
+    4, 0, 0, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
+    0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x10
+    0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x20
     0, 0, 0, 0, 0, 0,12, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
@@ -67,15 +67,19 @@ impl Cpu {
             0x00 => {},
             0x0A => { self.a = self.memory.read_byte(self.bc()); },
             0x1A => { self.a = self.memory.read_byte(self.de()); },
+
+            0x06 => { self.b = self.read_next_byte(); },
+            0x0E => { self.c = self.read_next_byte(); },
+            0x16 => { self.d = self.read_next_byte(); },
+            0x1E => { self.e = self.read_next_byte(); },
+            0x26 => { self.h = self.read_next_byte(); },
+            0x2E => { self.l = self.read_next_byte(); },
             0x36 => {
                 let addr = self.hl();
                 let val = self.read_next_byte();
                 self.memory.write_byte(addr, val);
             },
-            0x3E => {
-                self.a = self.read_next_byte();
-                println!("  a: {:#04X}", self.a);
-            },
+            0x3E => { self.a = self.read_next_byte(); },
 
             0x40 => { self.b = self.b; },
             0x41 => { self.b = self.c; },
