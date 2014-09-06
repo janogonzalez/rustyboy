@@ -32,7 +32,7 @@ static CPU_CYCLES: [uint, ..256] = [
     0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
    12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
-    0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xF0
+   12, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -112,6 +112,11 @@ impl Cpu {
             0xEE => {
                 let val = self.read_next_byte();
                 self.xor(val);
+            },
+            0xF0 => {
+                let addr = 0xFF00 + self.read_next_byte() as u16;
+                self.a = self.memory.read_byte(addr);
+                println!("  A = memory[{:#06X}] ({:#04X})", addr, self.a);
             },
             0xF3 => {
                 println!("  implement interrupts stuff...");
