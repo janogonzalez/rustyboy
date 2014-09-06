@@ -17,10 +17,10 @@ pub struct Cpu {
 
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    4,12, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
-    0,12, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x10
-    8,12, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x20
-    8,12, 8, 0, 0, 0,12, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x30
+    4,12, 8, 4, 4, 0, 8, 0, 0, 0, 8, 0, 4, 4, 8, 0, // 0x00
+    0,12, 8, 4, 4, 0, 8, 0, 8, 0, 8, 0, 4, 4, 8, 0, // 0x10
+    8,12, 8, 4, 4, 0, 8, 0, 8, 0, 8, 0, 4, 4, 8, 0, // 0x20
+    8,12, 8,12,12, 0,12, 0, 8, 0, 8, 0, 4, 4, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
@@ -137,6 +137,77 @@ impl Cpu {
                 if (self.f & C_FLAG) == C_FLAG {
                     self.pc += self.read_next_byte() as u16;
                 }
+            },
+
+            0x04 => {
+                let val = self.b;
+                self.b = self.inc(val);
+            },
+            0x0C => {
+                let val = self.c;
+                self.c = self.inc(val);
+            },
+            0x14 => {
+                let val = self.d;
+                self.d = self.inc(val);
+            },
+            0x1C => {
+                let val = self.e;
+                self.e = self.inc(val);
+            },
+            0x24 => {
+                let val = self.h;
+                self.h = self.inc(val);
+            },
+            0x2C => {
+                let val = self.l;
+                self.l = self.inc(val);
+            },
+            0x34 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let inc = self.inc(val);
+                self.memory.write_byte(addr, inc);
+            },
+            0x3C => {
+                let val = self.a;
+                self.a = self.inc(val);
+            },
+
+
+            0x05 => {
+                let val = self.b;
+                self.b = self.dec(val);
+            },
+            0x0D => {
+                let val = self.c;
+                self.c = self.dec(val);
+            },
+            0x15 => {
+                let val = self.d;
+                self.d = self.dec(val);
+            },
+            0x1D => {
+                let val = self.e;
+                self.e = self.dec(val);
+            },
+            0x25 => {
+                let val = self.h;
+                self.h = self.dec(val);
+            },
+            0x2D => {
+                let val = self.l;
+                self.l = self.dec(val);
+            },
+            0x35 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let dec = self.dec(val);
+                self.memory.write_byte(addr, dec);
+            },
+            0x3D => {
+                let val = self.a;
+                self.a = self.dec(val);
             },
 
             0x06 => { self.b = self.read_next_byte(); },
@@ -592,6 +663,22 @@ impl Cpu {
         let value = self.memory.read_word(self.pc);
         self.pc += 2;
         value
+    }
+
+    fn inc(&mut self, value: u8) -> u8 {
+        let result = value + 1;
+        if result == 0 { self.f |= Z_FLAG };
+        self.f &= !N_FLAG;
+        if (value & 0xF) + 1 > 0xF { self.f |= Z_FLAG }
+        result
+    }
+
+    fn dec(&mut self, value: u8) -> u8 {
+        let result = value - 1;
+        if result == 0 { self.f |= Z_FLAG };
+        self.f |= N_FLAG;
+        if value & 0xF == 0 { self.f |= H_FLAG };
+        result
     }
 
     fn add(&mut self, value: u8) {
