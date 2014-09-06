@@ -17,8 +17,8 @@ pub struct Cpu {
 
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    4, 0, 0, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
-    0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x10
+    4, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
+    0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x10
     0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x20
     0, 0, 0, 0, 0, 0,12, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
@@ -31,8 +31,8 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
     0, 0, 0,16, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xD0
-   12, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
-   12, 0, 0, 8, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xF0
+   12, 0, 8, 0, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xE0
+   12, 0, 8, 8, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -65,6 +65,14 @@ impl Cpu {
 
         match opcode {
             0x00 => {},
+            0x02 => {
+                let addr = self.bc();
+                self.memory.write_byte(addr, self.a);
+            },
+            0x12 => {
+                let addr = self.de();
+                self.memory.write_byte(addr, self.a);
+            },
             0x0A => { self.a = self.memory.read_byte(self.bc()); },
             0x1A => { self.a = self.memory.read_byte(self.de()); },
 
@@ -451,6 +459,14 @@ impl Cpu {
                 self.memory.write_byte(addr, self.a);
                 println!("  memory[{:#06X}] = A ({:#04X})", addr, self.a);
             },
+            0xE2 => {
+                let addr = 0xFF00 + self.c as u16;
+                self.memory.write_byte(addr, self.a);
+            },
+            0xEA => {
+                let addr = self.read_next_word();
+                self.memory.write_byte(addr, self.a);
+            }
 
             0xC6 => {
                 let val = self.read_next_byte();
@@ -490,6 +506,10 @@ impl Cpu {
                 self.a = self.memory.read_byte(addr);
                 println!("  A = memory[{:#06X}] ({:#04X})", addr, self.a);
             },
+            0xF2 => {
+                let addr = 0xFF00 + self.c as u16;
+                self.a = self.memory.read_byte(addr);
+            }
             0xF3 => {
                 println!("  implement interrupts stuff...");
             },
