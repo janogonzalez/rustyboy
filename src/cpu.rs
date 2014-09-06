@@ -19,8 +19,8 @@ static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
     4,12, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
     0,12, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x10
-    8,12, 0, 0, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x20
-    8,12, 0, 0, 0, 0,12, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x30
+    8,12, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x20
+    8,12, 8, 0, 0, 0,12, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
@@ -81,6 +81,27 @@ impl Cpu {
             0x31 => {
                 let val = self.read_next_word();
                 self.sp = val;
+            },
+
+            0x22 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.a);
+                self.set_hl(addr + 1);
+            },
+            0x32 => {
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.a);
+                self.set_hl(addr - 1);
+            },
+            0x2A => {
+                let addr = self.hl();
+                self.a = self.memory.read_byte(addr);
+                self.set_hl(addr + 1);
+            },
+            0x3A => {
+                let addr = self.hl();
+                self.a = self.memory.read_byte(addr);
+                self.set_hl(addr - 1);
             },
 
             0x02 => {
