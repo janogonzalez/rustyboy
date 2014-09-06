@@ -27,7 +27,7 @@ static CPU_CYCLES: [uint, ..256] = [
     8, 8, 8, 8, 8, 8, 0, 8, 4, 4, 4, 4, 4, 4, 8, 4, // 0x70
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x80
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
-    0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0
     0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
@@ -302,6 +302,38 @@ impl Cpu {
                 self.sbc(val);
             },
 
+            0xA0 => {
+                let val = self.b;
+                self.and(val);
+            },
+            0xA1 => {
+                let val = self.c;
+                self.and(val);
+            },
+            0xA2 => {
+                let val = self.d;
+                self.and(val);
+            },
+            0xA3 => {
+                let val = self.e;
+                self.and(val);
+            },
+            0xA4 => {
+                let val = self.h;
+                self.and(val);
+            },
+            0xA5 => {
+                let val = self.l;
+                self.and(val);
+            },
+            0xA6 => {
+                let val = self.memory.read_byte(self.hl());
+                self.and(val);
+            },
+            0xA7 => {
+                let val = self.a;
+                self.and(val);
+            },
 
             0xA8 => {
                 let val = self.b;
@@ -337,6 +369,7 @@ impl Cpu {
                 println!("  a: {:#04X}", self.a);
                 println!("  f: {:#08t}", self.f);
             },
+
             0xC3 => {
                 self.pc = self.read_next_word();
                 println!("  address: {:#06X}", self.pc);
@@ -417,6 +450,12 @@ impl Cpu {
         if self.a & 0xF < (value & 0xF + c) { self.f |= H_FLAG };
         if (self.a as u16) < (value as u16 + c as u16) { self.f |= C_FLAG };
         self.a = result;
+    }
+
+    fn and(&mut self, value: u8) {
+        self.a &= value;
+        self.f = H_FLAG;
+        if self.a == 0 { self.f |= Z_FLAG };
     }
 
     fn xor(&mut self, value: u8) {
