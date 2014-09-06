@@ -17,10 +17,10 @@ pub struct Cpu {
 
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    4, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
-    0, 0, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x10
-    8, 0, 0, 0, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x20
-    8, 0, 0, 0, 0, 0,12, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x30
+    4,12, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
+    0,12, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x10
+    8,12, 0, 0, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x20
+    8,12, 0, 0, 0, 0,12, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
@@ -65,6 +65,24 @@ impl Cpu {
 
         match opcode {
             0x00 => {},
+
+            0x01 => {
+                let val = self.read_next_word();
+                self.set_bc(val);
+            },
+            0x11 => {
+                let val = self.read_next_word();
+                self.set_de(val);
+            },
+            0x21 => {
+                let val = self.read_next_word();
+                self.set_hl(val);
+            },
+            0x31 => {
+                let val = self.read_next_word();
+                self.sp = val;
+            },
+
             0x02 => {
                 let addr = self.bc();
                 self.memory.write_byte(addr, self.a);
@@ -627,6 +645,21 @@ impl Cpu {
 
     fn hl(&self) -> u16 {
         self.h as u16 << 8 | self.l as u16
+    }
+
+    fn set_bc(&mut self, value: u16) {
+        self.b = (value >> 8) as u8;
+        self.c = (value & 0x00FF) as u8;
+    }
+
+    fn set_de(&mut self, value: u16) {
+        self.d = (value >> 8) as u8;
+        self.e = (value & 0x00FF) as u8;
+    }
+
+    fn set_hl(&mut self, value: u16) {
+        self.h = (value >> 8) as u8;
+        self.l = (value & 0x00FF) as u8;
     }
 
     pub fn run(&mut self) {
