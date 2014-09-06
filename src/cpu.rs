@@ -18,7 +18,7 @@ pub struct Cpu {
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
     4,12, 8, 4, 4, 0, 8, 0, 0, 0, 8, 0, 4, 4, 8, 0, // 0x00
-    0,12, 8, 4, 4, 0, 8, 0, 8, 0, 8, 0, 4, 4, 8, 0, // 0x10
+    0,12, 8, 4, 4, 0, 8, 0,12, 0, 8, 0, 4, 4, 8, 0, // 0x10
     8,12, 8, 4, 4, 0, 8, 0, 8, 0, 8, 0, 4, 4, 8, 0, // 0x20
     8,12, 8,12,12, 0,12, 0, 8, 0, 8, 0, 4, 4, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
@@ -121,21 +121,25 @@ impl Cpu {
             0x20 => {
                 if (self.f & Z_FLAG) == 0x00 {
                     self.pc += self.read_next_byte() as u16;
+                    self.cycles += 4;
                 }
             },
             0x28 => {
                 if (self.f & Z_FLAG) == Z_FLAG {
                     self.pc += self.read_next_byte() as u16;
+                    self.cycles += 4;
                 }
             },
             0x30 => {
                 if (self.f & C_FLAG) == 0x00 {
                     self.pc += self.read_next_byte() as u16;
+                    self.cycles += 4;
                 }
             },
             0x38 => {
                 if (self.f & C_FLAG) == C_FLAG {
                     self.pc += self.read_next_byte() as u16;
+                    self.cycles += 4;
                 }
             },
 
