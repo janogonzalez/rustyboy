@@ -32,7 +32,7 @@ static CPU_CYCLES: [uint, ..256] = [
     0, 0, 0,16, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xD0
    12, 0, 8, 0, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xE0
-   12, 0, 8, 8, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xF0
+   12, 0, 8, 4, 0, 0, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -636,6 +636,9 @@ impl Cpu {
                 self.a = self.memory.read_byte(addr);
             }
             0xF3 => {
+                print!("implement interrupts stuff... ");
+            },
+            0xFB => {
                 print!("implement interrupts stuff... ");
             },
             0xFA => {
