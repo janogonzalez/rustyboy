@@ -26,7 +26,7 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
     8, 8, 8, 8, 8, 8, 0, 8, 4, 4, 4, 4, 4, 4, 8, 4, // 0x70
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x80
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x90
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0
     0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
@@ -236,6 +236,72 @@ impl Cpu {
                 self.adc(val);
             },
 
+            0x90 => {
+                let val = self.b;
+                self.sub(val);
+            },
+            0x91 => {
+                let val = self.c;
+                self.sub(val);
+            },
+            0x92 => {
+                let val = self.d;
+                self.sub(val);
+            },
+            0x93 => {
+                let val = self.e;
+                self.sub(val);
+            },
+            0x94 => {
+                let val = self.h;
+                self.sub(val);
+            },
+            0x95 => {
+                let val = self.l;
+                self.sub(val);
+            },
+            0x96 => {
+                let val = self.memory.read_byte(self.hl());
+                self.sub(val);
+            },
+            0x97 => {
+                let val = self.a;
+                self.sub(val);
+            },
+
+            0x98 => {
+                let val = self.b;
+                self.sbc(val);
+            },
+            0x99 => {
+                let val = self.c;
+                self.sbc(val);
+            },
+            0x9A => {
+                let val = self.d;
+                self.sbc(val);
+            },
+            0x9B => {
+                let val = self.e;
+                self.sbc(val);
+            },
+            0x9C => {
+                let val = self.h;
+                self.sbc(val);
+            },
+            0x9D => {
+                let val = self.l;
+                self.sbc(val);
+            },
+            0x9E => {
+                let val = self.memory.read_byte(self.hl());
+                self.sbc(val);
+            },
+            0x9F => {
+                let val = self.a;
+                self.sbc(val);
+            },
+
 
             0xA8 => {
                 let val = self.b;
@@ -331,6 +397,25 @@ impl Cpu {
         if result == 0 { self.f |= Z_FLAG };
         if (self.a & 0xF + value & 0xF + c) > 0xF { self.f |= H_FLAG }
         if (self.a as u16 + value as u16 + c as u16) > 0xFF { self.f |= C_FLAG }
+        self.a = result;
+    }
+
+    fn sub(&mut self, value: u8) {
+        let result = self.a - value;
+        self.f = N_FLAG;
+        if result == 0 { self.f |= Z_FLAG };
+        if self.a & 0xF < value & 0xF { self.f |= H_FLAG };
+        if self.a < value { self.f |= C_FLAG }
+        self.a = result;
+    }
+
+    fn sbc(&mut self, value: u8) {
+        let c = (self.f & C_FLAG) >> 4;
+        let result = self.a - value - c;
+        self.f = N_FLAG;
+        if result == 0 { self.f |= Z_FLAG };
+        if self.a & 0xF < (value & 0xF + c) { self.f |= H_FLAG };
+        if (self.a as u16) < (value as u16 + c as u16) { self.f |= C_FLAG };
         self.a = result;
     }
 
