@@ -28,7 +28,7 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x80
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
-    4, 4, 4, 4, 4, 4, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0
+    4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
     0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
    12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
@@ -403,6 +403,41 @@ impl Cpu {
                 self.or(val);
             },
 
+            0xB8 => {
+                let val = self.b;
+                self.cp(val);
+            },
+            0xB9 => {
+                let val = self.c;
+                self.cp(val);
+            },
+            0xBA => {
+                let val = self.d;
+                self.cp(val);
+            },
+            0xBB => {
+                let val = self.e;
+                self.cp(val);
+            },
+            0xBC => {
+                let val = self.h;
+                self.cp(val);
+            },
+            0xBD => {
+                let val = self.l;
+                self.cp(val);
+            },
+            0xBE => {
+                let val = self.memory.read_byte(self.hl());
+                self.cp(val);
+            },
+            0xBF => {
+                let val = self.a;
+                self.cp(val);
+                println!("  a: {:#04X}", self.a);
+                println!("  f: {:#08t}", self.f);
+            },
+
             0xC3 => {
                 self.pc = self.read_next_word();
                 println!("  address: {:#06X}", self.pc);
@@ -499,6 +534,14 @@ impl Cpu {
     fn xor(&mut self, value: u8) {
         self.a ^= value;
         self.f = if self.a == 0 { Z_FLAG } else { 0x0000 };
+    }
+
+    fn cp(&mut self, value: u8) {
+        let result = self.a - value;
+        self.f = N_FLAG;
+        if result == 0 { self.f |= Z_FLAG };
+        if self.a & 0xF < value & 0xF { self.f |= H_FLAG };
+        if self.a < value { self.f |= C_FLAG }
     }
 
     fn bc(&self) -> u16 {
