@@ -30,7 +30,7 @@ impl Memory {
                 self.ram[address as uint - 0xC000] = value
             },
             0xFF00..0xFF7F => {
-                println!("  implement I/O ports stuff...")
+                print!("Implement I/O ports stuff... ")
             },
             0xFF80..0xFFFF => {
                 self.hram[address as uint - 0xFF80] = value

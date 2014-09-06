@@ -61,7 +61,7 @@ impl Cpu {
     pub fn step(&mut self) {
         let opcode = self.read_next_byte();
 
-        println!("Executing: {:#04X}", opcode);
+        print!("Executing: {:#04X} ", opcode);
 
         match opcode {
             0x00 => {},
@@ -378,8 +378,6 @@ impl Cpu {
             0xAF => {
                 let val = self.a;
                 self.xor(val);
-                println!("  a: {:#04X}", self.a);
-                println!("  f: {:#08t}", self.f);
             },
 
             0xB0 => {
@@ -446,18 +444,12 @@ impl Cpu {
             0xBF => {
                 let val = self.a;
                 self.cp(val);
-                println!("  a: {:#04X}", self.a);
-                println!("  f: {:#08t}", self.f);
             },
 
-            0xC3 => {
-                self.pc = self.read_next_word();
-                println!("  address: {:#06X}", self.pc);
-            },
+            0xC3 => { self.pc = self.read_next_word(); },
             0xE0 => {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.memory.write_byte(addr, self.a);
-                println!("  memory[{:#06X}] = A ({:#04X})", addr, self.a);
             },
             0xE2 => {
                 let addr = 0xFF00 + self.c as u16;
@@ -504,14 +496,13 @@ impl Cpu {
             0xF0 => {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.a = self.memory.read_byte(addr);
-                println!("  A = memory[{:#06X}] ({:#04X})", addr, self.a);
             },
             0xF2 => {
                 let addr = 0xFF00 + self.c as u16;
                 self.a = self.memory.read_byte(addr);
             }
             0xF3 => {
-                println!("  implement interrupts stuff...");
+                print!("implement interrupts stuff... ");
             },
             0xFA => {
                 let addr = self.read_next_word();
@@ -521,7 +512,11 @@ impl Cpu {
         }
 
         self.cycles += CPU_CYCLES[opcode as uint];
-        println!("  cycles: {}", self.cycles);
+        println!("<A = {:#04X}, B = {:#04X}, C = {:#04X}, D = {:#04X} \
+                   E = {:#04X}, H = {:#04X}, L = {:#04X}, FLAGS = {:#08t} \
+                   Cycles = {}>",
+                 self.a, self.b, self.c, self.d, self.e, self.h, self.l,
+                 self.f, self.cycles);
     }
 
     fn read_next_byte(&mut self) -> u8 {
