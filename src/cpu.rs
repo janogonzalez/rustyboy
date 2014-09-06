@@ -18,9 +18,9 @@ pub struct Cpu {
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
     4, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x00
-    0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0, 8, 0, // 0x10
-    0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x20
-    0, 0, 0, 0, 0, 0,12, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x30
+    0, 0, 8, 0, 0, 0, 8, 0, 8, 0, 8, 0, 0, 0, 8, 0, // 0x10
+    8, 0, 0, 0, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x20
+    8, 0, 0, 0, 0, 0,12, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
@@ -75,6 +75,30 @@ impl Cpu {
             },
             0x0A => { self.a = self.memory.read_byte(self.bc()); },
             0x1A => { self.a = self.memory.read_byte(self.de()); },
+
+            0x18 => {
+                self.pc += self.read_next_byte() as u16;
+            },
+            0x20 => {
+                if (self.f & Z_FLAG) == 0x00 {
+                    self.pc += self.read_next_byte() as u16;
+                }
+            },
+            0x28 => {
+                if (self.f & Z_FLAG) == Z_FLAG {
+                    self.pc += self.read_next_byte() as u16;
+                }
+            },
+            0x30 => {
+                if (self.f & C_FLAG) == 0x00 {
+                    self.pc += self.read_next_byte() as u16;
+                }
+            },
+            0x38 => {
+                if (self.f & C_FLAG) == C_FLAG {
+                    self.pc += self.read_next_byte() as u16;
+                }
+            },
 
             0x06 => { self.b = self.read_next_byte(); },
             0x0E => { self.c = self.read_next_byte(); },
