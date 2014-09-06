@@ -29,10 +29,10 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
-   12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
-   12, 0, 0, 8, 0, 0, 0, 0, 0, 0,16, 0, 0, 0, 0, 0, // 0xF0
+    0, 0, 0,16, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xC0
+    0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xD0
+   12, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
+   12, 0, 0, 8, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -451,10 +451,40 @@ impl Cpu {
                 self.memory.write_byte(addr, self.a);
                 println!("  memory[{:#06X}] = A ({:#04X})", addr, self.a);
             },
+
+            0xC6 => {
+                let val = self.read_next_byte();
+                self.add(val);
+            },
+            0xCE => {
+                let val = self.read_next_byte();
+                self.adc(val);
+            },
+            0xD6 => {
+                let val = self.read_next_byte();
+                self.sub(val);
+            },
+            0xDE => {
+                let val = self.read_next_byte();
+                self.sbc(val);
+            },
+            0xE6 => {
+                let val = self.read_next_byte();
+                self.and(val);
+            },
             0xEE => {
                 let val = self.read_next_byte();
                 self.xor(val);
             },
+            0xF6 => {
+                let val = self.read_next_byte();
+                self.or(val);
+            },
+            0xFE => {
+                let val = self.read_next_byte();
+                self.cp(val);
+            },
+
             0xF0 => {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.a = self.memory.read_byte(addr);
