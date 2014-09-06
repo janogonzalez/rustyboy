@@ -15,6 +15,26 @@ pub struct Cpu {
     cycles: uint
 }
 
+static CPU_CYCLES: [uint, ..256] = [
+//  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x00
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x10
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x20
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0x30
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x40
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x50
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x60
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x70
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x80
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x90
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xA0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0
+    0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
+   12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xE0
+    0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xF0
+];
+
 impl Cpu {
     pub fn new(memory: memory::Memory) -> Cpu {
         Cpu {
@@ -39,23 +59,18 @@ impl Cpu {
         println!("Executing: {:#04X}", opcode);
 
         match opcode {
-            0x00 => {
-                self.cycles += 4;
-            },
+            0x00 => {},
             0x3E => {
                 self.a = self.read_next_byte();
-                self.cycles += 8;
                 println!("  a: {:#04X}", self.a);
             },
             0xC3 => {
                 self.pc = self.read_next_word();
-                self.cycles += 16;
                 println!("  address: {:#06X}", self.pc);
             },
             0xE0 => {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.memory.write_byte(addr, self.a);
-                self.cycles += 12;
                 println!("  memory[{:#06X}] = A ({:#04X})", addr, self.a);
             },
             0xF3 => {
@@ -63,6 +78,9 @@ impl Cpu {
             },
             _ => fail!("Opcode not implemented: {:#04X}", opcode)
         }
+
+        self.cycles += CPU_CYCLES[opcode as uint];
+        println!("  cycles: {}", self.cycles);
     }
 
     fn read_next_byte(&mut self) -> u8 {
