@@ -27,13 +27,15 @@ static CPU_CYCLES: [uint, ..256] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x70
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x80
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x90
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xA0
+    0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0
     0, 0, 0,16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0
-   12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xE0
+   12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xE0
     0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xF0
 ];
+
+static Z_FLAG: u8 = 0b1000_0000;
 
 impl Cpu {
     pub fn new(memory: memory::Memory) -> Cpu {
@@ -64,6 +66,40 @@ impl Cpu {
                 self.a = self.read_next_byte();
                 println!("  a: {:#04X}", self.a);
             },
+            0xA8 => {
+                let val = self.b;
+                self.xor(val);
+            },
+            0xA9 => {
+                let val = self.c;
+                self.xor(val);
+            },
+            0xAA => {
+                let val = self.d;
+                self.xor(val);
+            },
+            0xAB => {
+                let val = self.e;
+                self.xor(val);
+            },
+            0xAC => {
+                let val = self.h;
+                self.xor(val);
+            },
+            0xAD => {
+                let val = self.l;
+                self.xor(val);
+            },
+            0xAE => {
+                let val = self.memory.read_byte(self.hl());
+                self.xor(val);
+            },
+            0xAF => {
+                let val = self.a;
+                self.xor(val);
+                println!("  a: {:#04X}", self.a);
+                println!("  f: {:#08t}", self.f);
+            },
             0xC3 => {
                 self.pc = self.read_next_word();
                 println!("  address: {:#06X}", self.pc);
@@ -72,6 +108,10 @@ impl Cpu {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.memory.write_byte(addr, self.a);
                 println!("  memory[{:#06X}] = A ({:#04X})", addr, self.a);
+            },
+            0xEE => {
+                let val = self.read_next_byte();
+                self.xor(val);
             },
             0xF3 => {
                 println!("  implement interrupts stuff...");
@@ -93,6 +133,15 @@ impl Cpu {
         let value = self.memory.read_word(self.pc);
         self.pc += 2;
         value
+    }
+
+    fn xor(&mut self, value: u8) {
+        self.a ^= value;
+        self.f = if self.a == 0 { Z_FLAG } else { 0x0000 };
+    }
+
+    fn hl(&self) -> u16 {
+        self.h as u16 << 8 | self.l as u16
     }
 
     pub fn run(&mut self) {
