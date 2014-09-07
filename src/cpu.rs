@@ -147,29 +147,34 @@ impl Cpu {
             0x1A => { self.a = self.memory.read_byte(self.de()); },
 
             0x18 => {
-                self.pc += self.read_next_byte() as u16;
+                let incr = self.read_next_byte() as u16;
+                self.pc += incr;
             },
             0x20 => {
                 if (self.f & Z_FLAG) == 0x00 {
-                    self.pc += self.read_next_byte() as u16;
+                    let incr = self.read_next_byte() as u16;
+                    self.pc += incr;
                     self.cycles += 4;
                 }
             },
             0x28 => {
                 if (self.f & Z_FLAG) == Z_FLAG {
-                    self.pc += self.read_next_byte() as u16;
+                    let incr = self.read_next_byte() as u16;
+                    self.pc += incr;
                     self.cycles += 4;
                 }
             },
             0x30 => {
                 if (self.f & C_FLAG) == 0x00 {
-                    self.pc += self.read_next_byte() as u16;
+                    let incr = self.read_next_byte() as u16;
+                    self.pc += incr;
                     self.cycles += 4;
                 }
             },
             0x38 => {
                 if (self.f & C_FLAG) == C_FLAG {
-                    self.pc += self.read_next_byte() as u16;
+                    let incr = self.read_next_byte() as u16;
+                    self.pc += incr;
                     self.cycles += 4;
                 }
             },
@@ -617,28 +622,32 @@ impl Cpu {
 
             0xC0 => {
                 if (self.f & Z_FLAG) == 0x00 {
-                    self.pc += self.memory.read_word(self.sp);
+                    let incr = self.memory.read_word(self.sp);
+                    self.pc += incr;
                     self.sp += 2;
                     self.cycles += 12;
                 }
             },
             0xC8 => {
                 if (self.f & Z_FLAG) == Z_FLAG {
-                    self.pc += self.memory.read_word(self.sp);
+                    let incr = self.memory.read_word(self.sp);
+                    self.pc += incr;
                     self.sp += 2;
                     self.cycles += 12;
                 }
             },
             0xD0 => {
                 if (self.f & C_FLAG) == 0x00 {
-                    self.pc += self.memory.read_word(self.sp);
+                    let incr = self.memory.read_word(self.sp);
+                    self.pc += incr;
                     self.sp += 2;
                     self.cycles += 12;
                 }
             },
             0xD8 => {
                 if (self.f & C_FLAG) == C_FLAG {
-                    self.pc += self.memory.read_word(self.sp);
+                    let incr = self.memory.read_word(self.sp);
+                    self.pc += incr;
                     self.sp += 2;
                     self.cycles += 12;
                 }
