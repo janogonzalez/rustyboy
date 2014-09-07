@@ -43,4 +43,9 @@ impl Memory {
         self.read_byte(address) as u16 |
             self.read_byte(address + 1) as u16 << 8
     }
+
+    pub fn write_word(&mut self, address: u16, value: u16) {
+        self.write_byte(address, (value & 0xFF) as u8);
+        self.write_byte(address + 1, (value >> 8) as u8);
+    }
 }

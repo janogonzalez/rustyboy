@@ -17,7 +17,7 @@ pub struct Cpu {
 
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    4,12, 8, 8, 4, 4, 8, 0, 0, 0, 8, 8, 4, 4, 8, 0, // 0x00
+    4,12, 8, 8, 4, 4, 8, 4,20, 8, 8, 8, 4, 4, 8, 4, // 0x00
     0,12, 8, 8, 4, 4, 8, 0,12, 0, 8, 8, 4, 4, 8, 0, // 0x10
     8,12, 8, 8, 4, 4, 8, 0, 8, 0, 8, 8, 4, 4, 8, 0, // 0x20
     8,12, 8, 8,12,12,12, 0, 8, 0, 8, 8, 4, 4, 8, 0, // 0x30
@@ -64,12 +64,76 @@ impl Cpu {
         print!("Executing: {:#04X} ", opcode);
 
         match opcode {
-            0x00 => {},
-
-            0x01 => {
+            0x00 => { // NOP
+            },
+            0x01 => { // LD BC,nn
                 let val = self.read_next_word();
                 self.set_bc(val);
             },
+            0x02 => { // LD (BC), A
+                let addr = self.bc();
+                self.memory.write_byte(addr, self.a);
+            },
+            0x03 => { // INC BC
+                let val = self.bc();
+                self.set_bc(val + 1);
+            },
+            0x04 => { // INC B
+                let val = self.b;
+                self.b = self.inc(val);
+            },
+            0x05 => { // DEC B
+                let val = self.b;
+                self.b = self.dec(val);
+            },
+            0x06 => { // LD B,n
+                self.b = self.read_next_byte();
+            },
+            0x07 => { // RLCA
+                let val = self.a;
+                self.a = val << 1;
+                self.f = 0x00;
+                if val & 0x80 == 0x80 {
+                    self.f |= C_FLAG;
+                    self.a |= 0x01;
+                };
+            },
+            0x08 => { // LD (nn), SP
+                let addr = self.read_next_word();
+                self.memory.write_word(addr, self.sp);
+            },
+            0x09 => { // ADD HL, BC
+                let val = self.bc();
+                self.add_hl(val);
+            },
+            0x0A => { // LD A,(BC)
+                self.a = self.memory.read_byte(self.bc());
+            },
+            0x0B => { // DEC BC
+                let val = self.bc();
+                self.set_bc(val - 1);
+            },
+            0x0C => { // INC C
+                let val = self.c;
+                self.c = self.inc(val);
+            },
+            0x0D => { // DEC C
+                let val = self.c;
+                self.c = self.dec(val);
+            },
+            0x0E => { // LD C,n
+                self.c = self.read_next_byte();
+            },
+            0x0F => { // RRCA
+                let val = self.a;
+                self.a = val >> 1;
+                self.f = 0x00;
+                if val & 0x01 == 0x01 {
+                    self.f |= C_FLAG;
+                    self.a |= 0x80;
+                };
+            },
+
             0x11 => {
                 let val = self.read_next_word();
                 self.set_de(val);
@@ -83,10 +147,6 @@ impl Cpu {
                 self.sp = val;
             },
 
-            0x03 => {
-                let val = self.bc();
-                self.set_bc(val + 1);
-            },
             0x13 => {
                 let val = self.de();
                 self.set_de(val + 1);
@@ -97,10 +157,6 @@ impl Cpu {
             },
             0x33 => {
                 self.sp += 1;
-            },
-            0x0B => {
-                let val = self.bc();
-                self.set_bc(val - 1);
             },
             0x1B => {
                 let val = self.de();
@@ -135,15 +191,10 @@ impl Cpu {
                 self.set_hl(addr - 1);
             },
 
-            0x02 => {
-                let addr = self.bc();
-                self.memory.write_byte(addr, self.a);
-            },
             0x12 => {
                 let addr = self.de();
                 self.memory.write_byte(addr, self.a);
             },
-            0x0A => { self.a = self.memory.read_byte(self.bc()); },
             0x1A => { self.a = self.memory.read_byte(self.de()); },
 
             0x18 => {
@@ -179,14 +230,6 @@ impl Cpu {
                 }
             },
 
-            0x04 => {
-                let val = self.b;
-                self.b = self.inc(val);
-            },
-            0x0C => {
-                let val = self.c;
-                self.c = self.inc(val);
-            },
             0x14 => {
                 let val = self.d;
                 self.d = self.inc(val);
@@ -215,14 +258,6 @@ impl Cpu {
             },
 
 
-            0x05 => {
-                let val = self.b;
-                self.b = self.dec(val);
-            },
-            0x0D => {
-                let val = self.c;
-                self.c = self.dec(val);
-            },
             0x15 => {
                 let val = self.d;
                 self.d = self.dec(val);
@@ -250,8 +285,6 @@ impl Cpu {
                 self.a = self.dec(val);
             },
 
-            0x06 => { self.b = self.read_next_byte(); },
-            0x0E => { self.c = self.read_next_byte(); },
             0x16 => { self.d = self.read_next_byte(); },
             0x1E => { self.e = self.read_next_byte(); },
             0x26 => { self.h = self.read_next_byte(); },
@@ -774,6 +807,14 @@ impl Cpu {
         if (self.a & 0xF + value & 0xF + c) > 0xF { self.f |= H_FLAG }
         if (self.a as u16 + value as u16 + c as u16) > 0xFF { self.f |= C_FLAG }
         self.a = result;
+    }
+
+    fn add_hl(&mut self, value: u16) {
+        let result = self.hl() + value;
+        self.f &= N_FLAG;
+        if (self.hl() & 0xFFF + value & 0xFFF) > 0xFFF { self.f |= H_FLAG }
+        if (self.hl() as u32 + value as u32) > 0xFFFF { self.f |= C_FLAG }
+        self.set_hl(result);
     }
 
     fn sub(&mut self, value: u8) {
