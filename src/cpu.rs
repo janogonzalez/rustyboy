@@ -147,34 +147,34 @@ impl Cpu {
             0x1A => { self.a = self.memory.read_byte(self.de()); },
 
             0x18 => {
-                let incr = self.read_next_byte() as u16;
-                self.pc += incr;
+                let incr = self.read_next_byte() as i8;
+                self.pc = (self.pc as i16 + incr as i16) as u16;
             },
             0x20 => {
+                let incr = self.read_next_byte() as i8;
                 if (self.f & Z_FLAG) == 0x00 {
-                    let incr = self.read_next_byte() as u16;
-                    self.pc += incr;
+                    self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
             0x28 => {
+                let incr = self.read_next_byte() as i8;
                 if (self.f & Z_FLAG) == Z_FLAG {
-                    let incr = self.read_next_byte() as u16;
-                    self.pc += incr;
+                    self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
             0x30 => {
+                let incr = self.read_next_byte() as i8;
                 if (self.f & C_FLAG) == 0x00 {
-                    let incr = self.read_next_byte() as u16;
-                    self.pc += incr;
+                    self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
             0x38 => {
+                let incr = self.read_next_byte() as i8;
                 if (self.f & C_FLAG) == C_FLAG {
-                    let incr = self.read_next_byte() as u16;
-                    self.pc += incr;
+                    self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
