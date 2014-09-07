@@ -18,8 +18,8 @@ pub struct Cpu {
 static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
     4,12, 8, 8, 4, 4, 8, 4,20, 8, 8, 8, 4, 4, 8, 4, // 0x00
-    0,12, 8, 8, 4, 4, 8, 0,12, 0, 8, 8, 4, 4, 8, 0, // 0x10
-    8,12, 8, 8, 4, 4, 8, 0, 8, 0, 8, 8, 4, 4, 8, 0, // 0x20
+    0,12, 8, 8, 4, 4, 8, 4,12, 8, 8, 8, 4, 4, 8, 4, // 0x10
+    8,12, 8, 8, 4, 4, 8, 0, 8, 8, 8, 8, 4, 4, 8, 0, // 0x20
     8,12, 8, 8,12,12,12, 0, 8, 0, 8, 8, 4, 4, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
@@ -70,7 +70,7 @@ impl Cpu {
                 let val = self.read_next_word();
                 self.set_bc(val);
             },
-            0x02 => { // LD (BC), A
+            0x02 => { // LD (BC),A
                 let addr = self.bc();
                 self.memory.write_byte(addr, self.a);
             },
@@ -90,19 +90,25 @@ impl Cpu {
                 self.b = self.read_next_byte();
             },
             0x07 => { // RLCA
-                let val = self.a;
-                self.a = val << 1;
-                self.f = 0x00;
-                if val & 0x80 == 0x80 {
-                    self.f |= C_FLAG;
+                let old = self.a;
+                self.a <<= 1;
+
+                self.set_flag(Z_FLAG, false);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, false);
+
+                if old & 0x80 == 0x80 {
                     self.a |= 0x01;
-                };
+                    self.set_flag(C_FLAG, true);
+                } else {
+                    self.set_flag(C_FLAG, false);
+                }
             },
-            0x08 => { // LD (nn), SP
+            0x08 => { // LD (nn),SP
                 let addr = self.read_next_word();
                 self.memory.write_word(addr, self.sp);
             },
-            0x09 => { // ADD HL, BC
+            0x09 => { // ADD HL,BC
                 let val = self.bc();
                 self.add_hl(val);
             },
@@ -125,103 +131,192 @@ impl Cpu {
                 self.c = self.read_next_byte();
             },
             0x0F => { // RRCA
-                let val = self.a;
-                self.a = val >> 1;
-                self.f = 0x00;
-                if val & 0x01 == 0x01 {
-                    self.f |= C_FLAG;
+                let old = self.a;
+                self.a >>= 1;
+
+                self.set_flag(Z_FLAG, false);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, false);
+
+                if old & 0x01 == 0x01 {
                     self.a |= 0x80;
-                };
+                    self.set_flag(C_FLAG, true);
+                } else {
+                    self.set_flag(C_FLAG, false);
+                }
             },
 
-            0x11 => {
+            0x11 => { // LD DE,nn
                 let val = self.read_next_word();
                 self.set_de(val);
             },
-            0x21 => {
-                let val = self.read_next_word();
-                self.set_hl(val);
-            },
-            0x31 => {
-                let val = self.read_next_word();
-                self.sp = val;
-            },
-
-            0x13 => {
-                let val = self.de();
-                self.set_de(val + 1);
-            },
-            0x23 => {
-                let val = self.hl();
-                self.set_hl(val + 1);
-            },
-            0x33 => {
-                self.sp += 1;
-            },
-            0x1B => {
-                let val = self.de();
-                self.set_de(val - 1);
-            },
-            0x2B => {
-                let val = self.hl();
-                self.set_hl(val - 1);
-            },
-            0x3B => {
-                self.sp -= 1;
-            },
-
-            0x22 => {
-                let addr = self.hl();
-                self.memory.write_byte(addr, self.a);
-                self.set_hl(addr + 1);
-            },
-            0x32 => {
-                let addr = self.hl();
-                self.memory.write_byte(addr, self.a);
-                self.set_hl(addr - 1);
-            },
-            0x2A => {
-                let addr = self.hl();
-                self.a = self.memory.read_byte(addr);
-                self.set_hl(addr + 1);
-            },
-            0x3A => {
-                let addr = self.hl();
-                self.a = self.memory.read_byte(addr);
-                self.set_hl(addr - 1);
-            },
-
-            0x12 => {
+            0x12 => { // LD (DE),A
                 let addr = self.de();
                 self.memory.write_byte(addr, self.a);
             },
-            0x1A => { self.a = self.memory.read_byte(self.de()); },
+            0x13 => { // INC DE
+                let val = self.de();
+                self.set_de(val + 1);
+            },
+            0x14 => { // INC D
+                let val = self.d;
+                self.d = self.inc(val);
+            },
+            0x15 => { // DEC D
+                let val = self.d;
+                self.d = self.dec(val);
+            },
+            0x16 => { // LD D,n
+                self.d = self.read_next_byte();
+            },
+            0x17 => { // RLA
+                let old = self.a;
+                self.a <<= 1;
 
-            0x18 => {
+                if self.f & C_FLAG == C_FLAG { self.a |= 0x01 }
+
+                self.set_flag(Z_FLAG, false);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, false);
+                self.set_flag(C_FLAG, old & 0x80 == 0x80);
+            },
+            0x18 => { // JR +/-n
                 let incr = self.read_next_byte() as i8;
                 self.pc = (self.pc as i16 + incr as i16) as u16;
             },
-            0x20 => {
+            0x19 => { // ADD HL,DE
+                let val = self.de();
+                self.add_hl(val);
+            },
+            0x1A => { // LD A,(DE)
+                self.a = self.memory.read_byte(self.de());
+            },
+            0x1B => { // DEC DE
+                let val = self.de();
+                self.set_de(val - 1);
+            },
+            0x1C => { // INC E
+                let val = self.e;
+                self.e = self.inc(val);
+            },
+            0x1D => { // DEC E
+                let val = self.e;
+                self.e = self.dec(val);
+            },
+            0x1E => { // LD E,n
+                self.e = self.read_next_byte();
+            },
+            0x1F => { // RRA
+                let old = self.a;
+                self.a >>= 1;
+
+                if self.f & C_FLAG == C_FLAG { self.a |= 0x80 }
+
+                self.set_flag(Z_FLAG, false);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, false);
+                self.set_flag(C_FLAG, old & 0x01 == 0x01);
+            },
+            0x20 => { // JR NZ,+/-n
                 let incr = self.read_next_byte() as i8;
                 if (self.f & Z_FLAG) == 0x00 {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
-            0x28 => {
+            0x21 => { // LD HL,nn
+                let val = self.read_next_word();
+                self.set_hl(val);
+            },
+            0x22 => { // LD (HL+),A
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.a);
+                self.set_hl(addr + 1);
+            },
+            0x23 => { // INC HL
+                let val = self.hl();
+                self.set_hl(val + 1);
+            },
+            0x24 => { // INC H
+                let val = self.h;
+                self.h = self.inc(val);
+            },
+            0x25 => { // DEC H
+                let val = self.h;
+                self.h = self.dec(val);
+            },
+            0x26 => { // LD H,n
+                self.h = self.read_next_byte();
+            },
+
+            0x28 => { // JR Z,+/-n
                 let incr = self.read_next_byte() as i8;
                 if (self.f & Z_FLAG) == Z_FLAG {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
-            0x30 => {
+            0x29 => { // ADD HL,HL
+                let val = self.hl();
+                self.add_hl(val);
+            },
+            0x2A => { // LD A,(HL+)
+                let addr = self.hl();
+                self.a = self.memory.read_byte(addr);
+                self.set_hl(addr + 1);
+            },
+            0x2B => { // DEC HL
+                let val = self.hl();
+                self.set_hl(val - 1);
+            },
+            0x2C => { // INC L
+                let val = self.l;
+                self.l = self.inc(val);
+            },
+            0x2D => { // DEC L
+                let val = self.l;
+                self.l = self.dec(val);
+            },
+            0x2E => { // LD L,n
+                self.l = self.read_next_byte();
+            },
+
+            0x30 => { // JR NC,+/-n
                 let incr = self.read_next_byte() as i8;
                 if (self.f & C_FLAG) == 0x00 {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
+            0x31 => { // LD SP,nn
+                let val = self.read_next_word();
+                self.sp = val;
+            },
+            0x32 => { // LD (HL-),A
+                let addr = self.hl();
+                self.memory.write_byte(addr, self.a);
+                self.set_hl(addr - 1);
+            },
+            0x33 => { // INC SP
+                self.sp += 1;
+            },
+            0x34 => { // INC (HL)
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let inc = self.inc(val);
+                self.memory.write_byte(addr, inc);
+            },
+            0x3B => {
+                self.sp -= 1;
+            },
+
+            0x3A => {
+                let addr = self.hl();
+                self.a = self.memory.read_byte(addr);
+                self.set_hl(addr - 1);
+            },
+
+
             0x38 => {
                 let incr = self.read_next_byte() as i8;
                 if (self.f & C_FLAG) == C_FLAG {
@@ -230,50 +325,12 @@ impl Cpu {
                 }
             },
 
-            0x14 => {
-                let val = self.d;
-                self.d = self.inc(val);
-            },
-            0x1C => {
-                let val = self.e;
-                self.e = self.inc(val);
-            },
-            0x24 => {
-                let val = self.h;
-                self.h = self.inc(val);
-            },
-            0x2C => {
-                let val = self.l;
-                self.l = self.inc(val);
-            },
-            0x34 => {
-                let addr = self.hl();
-                let val = self.memory.read_byte(addr);
-                let inc = self.inc(val);
-                self.memory.write_byte(addr, inc);
-            },
             0x3C => {
                 let val = self.a;
                 self.a = self.inc(val);
             },
 
 
-            0x15 => {
-                let val = self.d;
-                self.d = self.dec(val);
-            },
-            0x1D => {
-                let val = self.e;
-                self.e = self.dec(val);
-            },
-            0x25 => {
-                let val = self.h;
-                self.h = self.dec(val);
-            },
-            0x2D => {
-                let val = self.l;
-                self.l = self.dec(val);
-            },
             0x35 => {
                 let addr = self.hl();
                 let val = self.memory.read_byte(addr);
@@ -285,10 +342,6 @@ impl Cpu {
                 self.a = self.dec(val);
             },
 
-            0x16 => { self.d = self.read_next_byte(); },
-            0x1E => { self.e = self.read_next_byte(); },
-            0x26 => { self.h = self.read_next_byte(); },
-            0x2E => { self.l = self.read_next_byte(); },
             0x36 => {
                 let addr = self.hl();
                 let val = self.read_next_byte();
@@ -755,11 +808,18 @@ impl Cpu {
         }
 
         self.cycles += CPU_CYCLES[opcode as uint];
+
+        let flags = format!("{}{}{}{}",
+                            if self.f & Z_FLAG == Z_FLAG { "Z" } else { "-" },
+                            if self.f & N_FLAG == N_FLAG { "N" } else { "-" },
+                            if self.f & H_FLAG == H_FLAG { "H" } else { "-" },
+                            if self.f & C_FLAG == C_FLAG { "C" } else { "-" });
+
         println!("<A = {:#04X}, B = {:#04X}, C = {:#04X}, D = {:#04X} \
-                   E = {:#04X}, H = {:#04X}, L = {:#04X}, FLAGS = {:#08t} \
+                   E = {:#04X}, H = {:#04X}, L = {:#04X}, FLAGS = {} \
                    PC = {:#08X} SP = {:#08X} Cycles = {}>",
                  self.a, self.b, self.c, self.d, self.e, self.h, self.l,
-                 self.f, self.pc, self.sp, self.cycles);
+                 flags, self.pc, self.sp, self.cycles);
     }
 
     fn read_next_byte(&mut self) -> u8 {
@@ -776,88 +836,123 @@ impl Cpu {
 
     fn inc(&mut self, value: u8) -> u8 {
         let result = value + 1;
-        if result == 0 { self.f |= Z_FLAG };
-        self.f &= !N_FLAG;
-        if (value & 0xF) + 1 > 0xF { self.f |= Z_FLAG }
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, (value & 0xF) + 1 > 0xF);
+
         result
     }
 
     fn dec(&mut self, value: u8) -> u8 {
         let result = value - 1;
-        if result == 0 { self.f |= Z_FLAG };
-        self.f |= N_FLAG;
-        if value & 0xF == 0 { self.f |= H_FLAG };
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, true);
+        self.set_flag(H_FLAG, value & 0xF == 0);
+
         result
     }
 
     fn add(&mut self, value: u8) {
         let result = self.a + value;
-        self.f = 0x0000;
-        if result == 0 { self.f |= Z_FLAG };
-        if (self.a & 0xF + value & 0xF) > 0xF { self.f |= H_FLAG }
-        if (self.a as u16 + value as u16) > 0xFF { self.f |= C_FLAG }
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, (a & 0xF + value & 0xF) > 0xF);
+        self.set_flag(C_FLAG, (a as u16 + value as u16) > 0xFF);
+
         self.a = result;
     }
 
     fn adc(&mut self, value: u8) {
         let c = (self.f & C_FLAG) >> 4;
         let result = self.a + value + c;
-        self.f = 0x0000;
-        if result == 0 { self.f |= Z_FLAG };
-        if (self.a & 0xF + value & 0xF + c) > 0xF { self.f |= H_FLAG }
-        if (self.a as u16 + value as u16 + c as u16) > 0xFF { self.f |= C_FLAG }
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, (a & 0xF + value & 0xF + c) > 0xF);
+        self.set_flag(C_FLAG, (a as u16 + value as u16 + c as u16) > 0xFF);
+
         self.a = result;
     }
 
     fn add_hl(&mut self, value: u16) {
         let result = self.hl() + value;
-        self.f &= N_FLAG;
-        if (self.hl() & 0xFFF + value & 0xFFF) > 0xFFF { self.f |= H_FLAG }
-        if (self.hl() as u32 + value as u32) > 0xFFFF { self.f |= C_FLAG }
+        let hl = self.hl();
+
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, (hl & 0xFFF + value & 0xFFF) > 0xFFF);
+        self.set_flag(C_FLAG, (hl as u32 + value as u32) > 0xFFFF);
+
         self.set_hl(result);
     }
 
     fn sub(&mut self, value: u8) {
         let result = self.a - value;
-        self.f = N_FLAG;
-        if result == 0 { self.f |= Z_FLAG };
-        if self.a & 0xF < value & 0xF { self.f |= H_FLAG };
-        if self.a < value { self.f |= C_FLAG }
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, true);
+        self.set_flag(H_FLAG, a & 0xF < value & 0xF);
+        self.set_flag(C_FLAG, a < value);
+
         self.a = result;
     }
 
     fn sbc(&mut self, value: u8) {
         let c = (self.f & C_FLAG) >> 4;
         let result = self.a - value - c;
-        self.f = N_FLAG;
-        if result == 0 { self.f |= Z_FLAG };
-        if self.a & 0xF < (value & 0xF + c) { self.f |= H_FLAG };
-        if (self.a as u16) < (value as u16 + c as u16) { self.f |= C_FLAG };
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, true);
+        self.set_flag(H_FLAG, a & 0xF < (value & 0xF + c));
+        self.set_flag(C_FLAG, (a as u16) < (value as u16 + c as u16));
+
         self.a = result;
     }
 
     fn and(&mut self, value: u8) {
         self.a &= value;
-        self.f = H_FLAG;
-        if self.a == 0 { self.f |= Z_FLAG };
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, a == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, true);
+        self.set_flag(C_FLAG, false);
     }
 
     fn or(&mut self, value: u8) {
         self.a |= value;
-        self.f = if self.a == 0 { Z_FLAG } else { 0x0000 };
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, a == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+        self.set_flag(C_FLAG, false);
     }
 
     fn xor(&mut self, value: u8) {
         self.a ^= value;
-        self.f = if self.a == 0 { Z_FLAG } else { 0x0000 };
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, a == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+        self.set_flag(C_FLAG, false);
     }
 
     fn cp(&mut self, value: u8) {
         let result = self.a - value;
-        self.f = N_FLAG;
-        if result == 0 { self.f |= Z_FLAG };
-        if self.a & 0xF < value & 0xF { self.f |= H_FLAG };
-        if self.a < value { self.f |= C_FLAG }
+        let a = self.a;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, true);
+        self.set_flag(H_FLAG, a & 0xF < value & 0xF);
+        self.set_flag(C_FLAG, a < value);
     }
 
     fn bc(&self) -> u16 {
@@ -887,9 +982,17 @@ impl Cpu {
         self.l = (value & 0x00FF) as u8;
     }
 
+    fn set_flag(&mut self, flag: u8, set: bool) {
+        if set {
+            self.f |= flag;
+        } else {
+            self.f &= !flag;
+        }
+    }
+
     pub fn run(&mut self) {
         loop {
             self.step();
-        }
+        };
     }
 }
