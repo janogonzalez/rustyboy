@@ -29,8 +29,8 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    0, 0, 0,16, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xC0
-    0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 8, 0, // 0xD0
+    8, 0, 0,16, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xC0
+    8, 0, 0, 0, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xD0
    12, 0, 8, 0, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xE0
    12, 0, 8, 4, 0, 0, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
 ];
@@ -582,6 +582,35 @@ impl Cpu {
             0xBF => {
                 let val = self.a;
                 self.cp(val);
+            },
+
+            0xC0 => {
+                if (self.f & Z_FLAG) == 0x00 {
+                    self.pc += self.memory.read_word(self.sp);
+                    self.sp += 2;
+                    self.cycles += 12;
+                }
+            },
+            0xC8 => {
+                if (self.f & Z_FLAG) == Z_FLAG {
+                    self.pc += self.memory.read_word(self.sp);
+                    self.sp += 2;
+                    self.cycles += 12;
+                }
+            },
+            0xD0 => {
+                if (self.f & C_FLAG) == 0x00 {
+                    self.pc += self.memory.read_word(self.sp);
+                    self.sp += 2;
+                    self.cycles += 12;
+                }
+            },
+            0xD8 => {
+                if (self.f & C_FLAG) == C_FLAG {
+                    self.pc += self.memory.read_word(self.sp);
+                    self.sp += 2;
+                    self.cycles += 12;
+                }
             },
 
             0xC3 => { self.pc = self.read_next_word(); },
