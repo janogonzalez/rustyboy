@@ -2,7 +2,7 @@ use rom;
 
 pub struct Memory {
     pub rom: rom::Rom,
-    ram: [u8, ..0x1000],
+    ram: [u8, ..0x2000],
     hram: [u8, ..0x80]
 }
 
@@ -10,7 +10,7 @@ impl Memory {
     pub fn new(rom: rom::Rom) -> Memory {
         Memory {
             rom: rom,
-            ram: [0x00, ..0x1000],
+            ram: [0x00, ..0x2000],
             hram: [0x00, ..0x80]
         }
     }
