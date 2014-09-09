@@ -349,6 +349,7 @@ impl Cpu {
                 self.a = self.read_next_byte();
             },
 
+            // LD B,...
             0x40 => { self.b = self.b; },
             0x41 => { self.b = self.c; },
             0x42 => { self.b = self.d; },
@@ -357,7 +358,7 @@ impl Cpu {
             0x45 => { self.b = self.l; },
             0x46 => { self.b = self.memory.read_byte(self.hl()); },
             0x47 => { self.b = self.a; },
-
+            // LD C,...
             0x48 => { self.c = self.b; },
             0x49 => { self.c = self.c; },
             0x4A => { self.c = self.d; },
@@ -366,7 +367,7 @@ impl Cpu {
             0x4D => { self.c = self.l; },
             0x4E => { self.c = self.memory.read_byte(self.hl()); },
             0x4F => { self.c = self.a; },
-
+            // LD D,...
             0x50 => { self.d = self.b; },
             0x51 => { self.d = self.c; },
             0x52 => { self.d = self.d; },
@@ -375,7 +376,7 @@ impl Cpu {
             0x55 => { self.d = self.l; },
             0x56 => { self.d = self.memory.read_byte(self.hl()); },
             0x57 => { self.d = self.a; },
-
+            // LD E,...
             0x58 => { self.e = self.b; },
             0x59 => { self.e = self.c; },
             0x5A => { self.e = self.d; },
@@ -384,7 +385,7 @@ impl Cpu {
             0x5D => { self.e = self.l; },
             0x5E => { self.e = self.memory.read_byte(self.hl()); },
             0x5F => { self.e = self.a; },
-
+            // LD H,...
             0x60 => { self.h = self.b; },
             0x61 => { self.h = self.c; },
             0x62 => { self.h = self.d; },
@@ -393,7 +394,7 @@ impl Cpu {
             0x65 => { self.h = self.l; },
             0x66 => { self.h = self.memory.read_byte(self.hl()); },
             0x67 => { self.h = self.a; },
-
+            // LD L,...
             0x68 => { self.l = self.b; },
             0x69 => { self.l = self.c; },
             0x6A => { self.l = self.d; },
@@ -402,37 +403,36 @@ impl Cpu {
             0x6D => { self.l = self.l; },
             0x6E => { self.l = self.memory.read_byte(self.hl()); },
             0x6F => { self.l = self.a; },
-
-            0x70 => {
+            0x70 => { // LD (HL),B
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.b);
             },
-            0x71 => {
+            0x71 => { // LD (HL),C
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.c);
             },
-            0x72 => {
+            0x72 => { // LD (HL),D
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.d);
             },
-            0x73 => {
+            0x73 => { // LD (HL),E
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.e);
             },
-            0x74 => {
+            0x74 => { // LD (HL),H
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.h);
             },
-            0x75 => {
+            0x75 => { // LD (HL),L
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.l);
             },
 
-            0x77 => {
+            0x77 => { // LD (HL),A
                 let addr = self.hl();
                 self.memory.write_byte(addr, self.a);
             },
-
+            // LD A,...
             0x78 => { self.a = self.b; },
             0x79 => { self.a = self.c; },
             0x7A => { self.a = self.d; },
