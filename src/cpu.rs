@@ -442,266 +442,259 @@ impl Cpu {
             0x7E => { self.a = self.memory.read_byte(self.hl()); },
             0x7F => { self.a = self.a; },
 
-            0x80 => {
+            0x80 => { // ADD A,B
                 let val = self.b;
                 self.add(val);
             },
-            0x81 => {
+            0x81 => { // ADD A,C
                 let val = self.c;
                 self.add(val);
             },
-            0x82 => {
+            0x82 => { // ADD A,D
                 let val = self.d;
                 self.add(val);
             },
-            0x83 => {
+            0x83 => { // ADD A,E
                 let val = self.e;
                 self.add(val);
             },
-            0x84 => {
+            0x84 => { // ADD A,H
                 let val = self.h;
                 self.add(val);
             },
-            0x85 => {
+            0x85 => { // ADD A,L
                 let val = self.l;
                 self.add(val);
             },
-            0x86 => {
+            0x86 => { // ADD A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.add(val);
             },
-            0x87 => {
+            0x87 => { // ADD A,A
                 let val = self.a;
                 self.add(val);
             },
-
-            0x88 => {
+            0x88 => { // ADC A,B
                 let val = self.b;
                 self.adc(val);
             },
-            0x89 => {
+            0x89 => { // ADC A,C
                 let val = self.c;
                 self.adc(val);
             },
-            0x8A => {
+            0x8A => { // ADC A,D
                 let val = self.d;
                 self.adc(val);
             },
-            0x8B => {
+            0x8B => { // ADC A,E
                 let val = self.e;
                 self.adc(val);
             },
-            0x8C => {
+            0x8C => { // ADC A,H
                 let val = self.h;
                 self.adc(val);
             },
-            0x8D => {
+            0x8D => { // ADC A,L
                 let val = self.l;
                 self.adc(val);
             },
-            0x8E => {
+            0x8E => { // ADC A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.adc(val);
             },
-            0x8F => {
+            0x8F => { // ADC A,A
                 let val = self.a;
                 self.adc(val);
             },
-
-            0x90 => {
+            0x90 => { // SUB A,B
                 let val = self.b;
                 self.sub(val);
             },
-            0x91 => {
+            0x91 => { // SUB A,C
                 let val = self.c;
                 self.sub(val);
             },
-            0x92 => {
+            0x92 => { // SUB A,D
                 let val = self.d;
                 self.sub(val);
             },
-            0x93 => {
+            0x93 => { // SUB A,E
                 let val = self.e;
                 self.sub(val);
             },
-            0x94 => {
+            0x94 => { // SUB A,H
                 let val = self.h;
                 self.sub(val);
             },
-            0x95 => {
+            0x95 => { // SUB A,L
                 let val = self.l;
                 self.sub(val);
             },
-            0x96 => {
+            0x96 => { // SUB A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.sub(val);
             },
-            0x97 => {
+            0x97 => { // SUB A,A
                 let val = self.a;
                 self.sub(val);
             },
-
-            0x98 => {
+            0x98 => { // SBC A,B
                 let val = self.b;
                 self.sbc(val);
             },
-            0x99 => {
+            0x99 => { // SBC A,C
                 let val = self.c;
                 self.sbc(val);
             },
-            0x9A => {
+            0x9A => { // SBC A,D
                 let val = self.d;
                 self.sbc(val);
             },
-            0x9B => {
+            0x9B => { // SBC A,E
                 let val = self.e;
                 self.sbc(val);
             },
-            0x9C => {
+            0x9C => { // SBC A,H
                 let val = self.h;
                 self.sbc(val);
             },
-            0x9D => {
+            0x9D => { // SBC A,L
                 let val = self.l;
                 self.sbc(val);
             },
-            0x9E => {
+            0x9E => { // SBC A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.sbc(val);
             },
-            0x9F => {
+            0x9F => { // SBC A,A
                 let val = self.a;
                 self.sbc(val);
             },
-
-            0xA0 => {
+            0xA0 => { // AND A,B
                 let val = self.b;
                 self.and(val);
             },
-            0xA1 => {
+            0xA1 => { // AND A,C
                 let val = self.c;
                 self.and(val);
             },
-            0xA2 => {
+            0xA2 => { // AND A,D
                 let val = self.d;
                 self.and(val);
             },
-            0xA3 => {
+            0xA3 => { // AND A,D
                 let val = self.e;
                 self.and(val);
             },
-            0xA4 => {
+            0xA4 => { // AND A,H
                 let val = self.h;
                 self.and(val);
             },
-            0xA5 => {
+            0xA5 => { // AND A,L
                 let val = self.l;
                 self.and(val);
             },
-            0xA6 => {
+            0xA6 => { // AND A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.and(val);
             },
-            0xA7 => {
+            0xA7 => { // AND A,A
                 let val = self.a;
                 self.and(val);
             },
-
-            0xA8 => {
+            0xA8 => { // XOR A,B
                 let val = self.b;
                 self.xor(val);
             },
-            0xA9 => {
+            0xA9 => { // XOR A,C
                 let val = self.c;
                 self.xor(val);
             },
-            0xAA => {
+            0xAA => { // XOR A,D
                 let val = self.d;
                 self.xor(val);
             },
-            0xAB => {
+            0xAB => { // XOR A,E
                 let val = self.e;
                 self.xor(val);
             },
-            0xAC => {
+            0xAC => { // XOR A,H
                 let val = self.h;
                 self.xor(val);
             },
-            0xAD => {
+            0xAD => { // XOR A,L
                 let val = self.l;
                 self.xor(val);
             },
-            0xAE => {
+            0xAE => { // XOR A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.xor(val);
             },
-            0xAF => {
+            0xAF => { // XOR A,A
                 let val = self.a;
                 self.xor(val);
             },
-
-            0xB0 => {
+            0xB0 => { // OR A,B
                 let val = self.b;
                 self.or(val);
             },
-            0xB1 => {
+            0xB1 => { // OR A,C
                 let val = self.c;
                 self.or(val);
             },
-            0xB2 => {
+            0xB2 => { // OR A,D
                 let val = self.d;
                 self.or(val);
             },
-            0xB3 => {
+            0xB3 => { // OR A,E
                 let val = self.e;
                 self.or(val);
             },
-            0xB4 => {
+            0xB4 => { // OR A,H
                 let val = self.h;
                 self.or(val);
             },
-            0xB5 => {
+            0xB5 => { // OR A,L
                 let val = self.l;
                 self.or(val);
             },
-            0xB6 => {
+            0xB6 => { // OR A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.or(val);
             },
-            0xB7 => {
+            0xB7 => { // OR A,A
                 let val = self.a;
                 self.or(val);
             },
-
-            0xB8 => {
+            0xB8 => { // CP A,B
                 let val = self.b;
                 self.cp(val);
             },
-            0xB9 => {
+            0xB9 => { // CP A,C
                 let val = self.c;
                 self.cp(val);
             },
-            0xBA => {
+            0xBA => { // CP A,D
                 let val = self.d;
                 self.cp(val);
             },
-            0xBB => {
+            0xBB => { // CP A,E
                 let val = self.e;
                 self.cp(val);
             },
-            0xBC => {
+            0xBC => { // CP A,H
                 let val = self.h;
                 self.cp(val);
             },
-            0xBD => {
+            0xBD => { // CP A,L
                 let val = self.l;
                 self.cp(val);
             },
-            0xBE => {
+            0xBE => { // CP A,(HL)
                 let val = self.memory.read_byte(self.hl());
                 self.cp(val);
             },
-            0xBF => {
+            0xBF => { // CP A,A
                 let val = self.a;
                 self.cp(val);
             },
