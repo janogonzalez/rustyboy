@@ -698,8 +698,7 @@ impl Cpu {
                 let val = self.a;
                 self.cp(val);
             },
-
-            0xC0 => {
+            0xC0 => { // RET NZ
                 if (self.f & Z_FLAG) == 0x00 {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
@@ -707,7 +706,17 @@ impl Cpu {
                     self.cycles += 12;
                 }
             },
-            0xC8 => {
+
+            0xC3 => { // JP nn
+                self.pc = self.read_next_word();
+            },
+
+            0xC6 => { // ADD A,n
+                let val = self.read_next_byte();
+                self.add(val);
+            },
+
+            0xC8 => { // RET Z
                 if (self.f & Z_FLAG) == Z_FLAG {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
@@ -715,7 +724,13 @@ impl Cpu {
                     self.cycles += 12;
                 }
             },
-            0xD0 => {
+
+            0xCE => { // ADC A,n
+                let val = self.read_next_byte();
+                self.adc(val);
+            },
+
+            0xD0 => { // RET NC
                 if (self.f & C_FLAG) == 0x00 {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
@@ -723,7 +738,13 @@ impl Cpu {
                     self.cycles += 12;
                 }
             },
-            0xD8 => {
+
+            0xD6 => { // SUB A,n
+                let val = self.read_next_byte();
+                self.sub(val);
+            },
+
+            0xD8 => { // RET C
                 if (self.f & C_FLAG) == C_FLAG {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
@@ -732,71 +753,66 @@ impl Cpu {
                 }
             },
 
-            0xC3 => { self.pc = self.read_next_word(); },
-            0xE0 => {
+            0xDE => { // SBC A,n
+                let val = self.read_next_byte();
+                self.sbc(val);
+            },
+
+            0xE0 => { // LD (0xFF00+n),A
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.memory.write_byte(addr, self.a);
             },
-            0xE2 => {
+
+            0xE2 => { // LD (0xFF00+C),A
                 let addr = 0xFF00 + self.c as u16;
                 self.memory.write_byte(addr, self.a);
             },
-            0xEA => {
+
+            0xE6 => { // AND A,n
+                let val = self.read_next_byte();
+                self.and(val);
+            },
+
+            0xEA => { // LD (nn),A
                 let addr = self.read_next_word();
                 self.memory.write_byte(addr, self.a);
             }
 
-            0xC6 => {
-                let val = self.read_next_byte();
-                self.add(val);
-            },
-            0xCE => {
-                let val = self.read_next_byte();
-                self.adc(val);
-            },
-            0xD6 => {
-                let val = self.read_next_byte();
-                self.sub(val);
-            },
-            0xDE => {
-                let val = self.read_next_byte();
-                self.sbc(val);
-            },
-            0xE6 => {
-                let val = self.read_next_byte();
-                self.and(val);
-            },
-            0xEE => {
+            0xEE => { // XOR A,n
                 let val = self.read_next_byte();
                 self.xor(val);
             },
-            0xF6 => {
+
+            0xF0 => { // LD A,(0xFF00+n)
+                let addr = 0xFF00 + self.read_next_byte() as u16;
+                self.a = self.memory.read_byte(addr);
+            },
+
+            0xF2 => { // LD A,(0xFF00+C)
+                let addr = 0xFF00 + self.c as u16;
+                self.a = self.memory.read_byte(addr);
+            }
+            0xF3 => { // DI
+                print!("implement interrupts stuff... ");
+            },
+
+            0xF6 => { // OR A,n
                 let val = self.read_next_byte();
                 self.or(val);
             },
-            0xFE => {
+
+            0xFA => { // LD A,(nn)
+                let addr = self.read_next_word();
+                self.a = self.memory.read_byte(addr);
+            },
+            0xFB => { // EI
+                print!("implement interrupts stuff... ");
+            },
+            0xFE => { // CP A,n
                 let val = self.read_next_byte();
                 self.cp(val);
             },
 
-            0xF0 => {
-                let addr = 0xFF00 + self.read_next_byte() as u16;
-                self.a = self.memory.read_byte(addr);
-            },
-            0xF2 => {
-                let addr = 0xFF00 + self.c as u16;
-                self.a = self.memory.read_byte(addr);
-            }
-            0xF3 => {
-                print!("implement interrupts stuff... ");
-            },
-            0xFB => {
-                print!("implement interrupts stuff... ");
-            },
-            0xFA => {
-                let addr = self.read_next_word();
-                self.a = self.memory.read_byte(addr);
-            },
             _ => fail!("Opcode not implemented: {:#04X}", opcode)
         }
 
