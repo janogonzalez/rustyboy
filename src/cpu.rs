@@ -20,7 +20,7 @@ static CPU_CYCLES: [uint, ..256] = [
     4,12, 8, 8, 4, 4, 8, 4,20, 8, 8, 8, 4, 4, 8, 4, // 0x00
     0,12, 8, 8, 4, 4, 8, 4,12, 8, 8, 8, 4, 4, 8, 4, // 0x10
     8,12, 8, 8, 4, 4, 8, 0, 8, 8, 8, 8, 4, 4, 8, 0, // 0x20
-    8,12, 8, 8,12,12,12, 0, 8, 0, 8, 8, 4, 4, 8, 0, // 0x30
+    8,12, 8, 8,12,12,12, 0, 8, 8, 8, 8, 4, 4, 8, 0, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
@@ -306,48 +306,48 @@ impl Cpu {
                 let inc = self.inc(val);
                 self.memory.write_byte(addr, inc);
             },
-            0x3B => {
-                self.sp -= 1;
-            },
-
-            0x3A => {
+            0x35 => { // DEC (HL)
                 let addr = self.hl();
-                self.a = self.memory.read_byte(addr);
-                self.set_hl(addr - 1);
+                let val = self.memory.read_byte(addr);
+                let dec = self.dec(val);
+                self.memory.write_byte(addr, dec);
+            },
+            0x36 => { // LD (HL),n
+                let addr = self.hl();
+                let val = self.read_next_byte();
+                self.memory.write_byte(addr, val);
             },
 
-
-            0x38 => {
+            0x38 => { // JR C,+/-n
                 let incr = self.read_next_byte() as i8;
                 if (self.f & C_FLAG) == C_FLAG {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
             },
-
-            0x3C => {
+            0x39 => { // ADD HL,SP
+                let val = self.sp;
+                self.add_hl(val);
+            },
+            0x3A => { // LD A,(HL-)
+                let addr = self.hl();
+                self.a = self.memory.read_byte(addr);
+                self.set_hl(addr - 1);
+            },
+            0x3B => { // DEC SP
+                self.sp -= 1;
+            },
+            0x3C => { // INC A
                 let val = self.a;
                 self.a = self.inc(val);
             },
-
-
-            0x35 => {
-                let addr = self.hl();
-                let val = self.memory.read_byte(addr);
-                let dec = self.dec(val);
-                self.memory.write_byte(addr, dec);
-            },
-            0x3D => {
+            0x3D => { // DEC A
                 let val = self.a;
                 self.a = self.dec(val);
             },
-
-            0x36 => {
-                let addr = self.hl();
-                let val = self.read_next_byte();
-                self.memory.write_byte(addr, val);
+            0x3E => { // LD A,n
+                self.a = self.read_next_byte();
             },
-            0x3E => { self.a = self.read_next_byte(); },
 
             0x40 => { self.b = self.b; },
             0x41 => { self.b = self.c; },
