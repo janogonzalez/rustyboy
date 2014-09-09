@@ -58,7 +58,7 @@ impl Cpu {
         }
     }
 
-    pub fn step(&mut self) {
+    fn step(&mut self) {
         let opcode = self.read_next_byte();
 
         print!("Executing: {:#04X} ", opcode);
@@ -173,7 +173,7 @@ impl Cpu {
                 let old = self.a;
                 self.a <<= 1;
 
-                if self.f & C_FLAG == C_FLAG { self.a |= 0x01 }
+                if self.is_set(C_FLAG) { self.a |= 0x01 }
 
                 self.set_flag(Z_FLAG, false);
                 self.set_flag(N_FLAG, false);
@@ -210,7 +210,7 @@ impl Cpu {
                 let old = self.a;
                 self.a >>= 1;
 
-                if self.f & C_FLAG == C_FLAG { self.a |= 0x80 }
+                if self.is_set(C_FLAG) { self.a |= 0x80 }
 
                 self.set_flag(Z_FLAG, false);
                 self.set_flag(N_FLAG, false);
@@ -219,7 +219,7 @@ impl Cpu {
             },
             0x20 => { // JR NZ,+/-n
                 let incr = self.read_next_byte() as i8;
-                if (self.f & Z_FLAG) == 0x00 {
+                if !self.is_set(Z_FLAG) {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
@@ -251,7 +251,7 @@ impl Cpu {
 
             0x28 => { // JR Z,+/-n
                 let incr = self.read_next_byte() as i8;
-                if (self.f & Z_FLAG) == Z_FLAG {
+                if self.is_set(Z_FLAG) {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
@@ -283,7 +283,7 @@ impl Cpu {
 
             0x30 => { // JR NC,+/-n
                 let incr = self.read_next_byte() as i8;
-                if (self.f & C_FLAG) == 0x00 {
+                if !self.is_set(C_FLAG) {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
@@ -320,7 +320,7 @@ impl Cpu {
 
             0x38 => { // JR C,+/-n
                 let incr = self.read_next_byte() as i8;
-                if (self.f & C_FLAG) == C_FLAG {
+                if self.is_set(C_FLAG) {
                     self.pc = (self.pc as i16 + incr as i16) as u16;
                     self.cycles += 4;
                 }
@@ -699,7 +699,7 @@ impl Cpu {
                 self.cp(val);
             },
             0xC0 => { // RET NZ
-                if (self.f & Z_FLAG) == 0x00 {
+                if !self.is_set(Z_FLAG) {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
                     self.sp += 2;
@@ -717,7 +717,7 @@ impl Cpu {
             },
 
             0xC8 => { // RET Z
-                if (self.f & Z_FLAG) == Z_FLAG {
+                if self.is_set(Z_FLAG) {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
                     self.sp += 2;
@@ -731,7 +731,7 @@ impl Cpu {
             },
 
             0xD0 => { // RET NC
-                if (self.f & C_FLAG) == 0x00 {
+                if !self.is_set(C_FLAG) {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
                     self.sp += 2;
@@ -745,7 +745,7 @@ impl Cpu {
             },
 
             0xD8 => { // RET C
-                if (self.f & C_FLAG) == C_FLAG {
+                if self.is_set(C_FLAG) {
                     let incr = self.memory.read_word(self.sp);
                     self.pc += incr;
                     self.sp += 2;
@@ -818,11 +818,15 @@ impl Cpu {
 
         self.cycles += CPU_CYCLES[opcode as uint];
 
+        self.print_info();
+    }
+
+    fn print_info(&self) {
         let flags = format!("{}{}{}{}",
-                            if self.f & Z_FLAG == Z_FLAG { "Z" } else { "-" },
-                            if self.f & N_FLAG == N_FLAG { "N" } else { "-" },
-                            if self.f & H_FLAG == H_FLAG { "H" } else { "-" },
-                            if self.f & C_FLAG == C_FLAG { "C" } else { "-" });
+                            if self.is_set(Z_FLAG) { "Z" } else { "-" },
+                            if self.is_set(N_FLAG) { "N" } else { "-" },
+                            if self.is_set(H_FLAG) { "H" } else { "-" },
+                            if self.is_set(C_FLAG) { "C" } else { "-" });
 
         println!("<A = {:#04X}, B = {:#04X}, C = {:#04X}, D = {:#04X} \
                    E = {:#04X}, H = {:#04X}, L = {:#04X}, FLAGS = {} \
@@ -997,6 +1001,10 @@ impl Cpu {
         } else {
             self.f &= !flag;
         }
+    }
+
+    fn is_set(&self, flag: u8) -> bool {
+        (self.f & flag) == flag
     }
 
     pub fn run(&mut self) {
