@@ -29,8 +29,8 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    8,16,12,16, 0,16, 8, 0, 8,16,12, 0, 0, 0, 8, 0, // 0xC0
-    8,16,12, 0, 0,16, 8, 0, 8, 0,12, 0, 0, 0, 8, 0, // 0xD0
+    8,16,12,16,12,16, 8, 0, 8,16,12, 0,12,24, 8, 0, // 0xC0
+    8,16,12, 0,12,16, 8, 0, 8, 0,12, 0,12, 0, 8, 0, // 0xD0
    12,16, 8, 0, 0,16, 8, 0, 0, 4,16, 0, 0, 0, 8, 0, // 0xE0
    12,16, 8, 4, 0,16, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
 ];
@@ -720,7 +720,16 @@ impl Cpu {
             0xC3 => { // JP nn
                 self.pc = self.read_next_word();
             },
+            0xC4 => { // CALL NZ,nn
+                let addr = self.read_next_word();
 
+                if !self.is_set(Z_FLAG) {
+                    self.sp -= 2;
+                    self.memory.write_word(self.sp, self.pc);
+                    self.pc = addr;
+                    self.cycles += 12;
+                }
+            },
             0xC5 => { // PUSH BC
                 let value = self.bc();
                 self.push(value);
@@ -751,6 +760,22 @@ impl Cpu {
                 }
             },
 
+            0xCC => { // CALL Z,nn
+                let addr = self.read_next_word();
+
+                if self.is_set(Z_FLAG) {
+                    self.sp -= 2;
+                    self.memory.write_word(self.sp, self.pc);
+                    self.pc = addr;
+                    self.cycles += 12;
+                }
+            },
+            0xCD => { // CALL nn
+                let addr = self.read_next_word();
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = addr;
+            },
             0xCE => { // ADC A,n
                 let val = self.read_next_byte();
                 self.adc_a(val);
@@ -776,6 +801,16 @@ impl Cpu {
                 }
             },
 
+            0xD4 => { // CALL NC,nn
+                let addr = self.read_next_word();
+
+                if !self.is_set(C_FLAG) {
+                    self.sp -= 2;
+                    self.memory.write_word(self.sp, self.pc);
+                    self.pc = addr;
+                    self.cycles += 12;
+                }
+            },
             0xD5 => { // PUSH DE
                 let value = self.de();
                 self.push(value);
@@ -801,7 +836,16 @@ impl Cpu {
                     self.cycles += 4;
                 }
             },
+            0xDC => { // CALL C,nn
+                let addr = self.read_next_word();
 
+                if self.is_set(C_FLAG) {
+                    self.sp -= 2;
+                    self.memory.write_word(self.sp, self.pc);
+                    self.pc = addr;
+                    self.cycles += 12;
+                }
+            },
             0xDE => { // SBC A,n
                 let val = self.read_next_byte();
                 self.sbc_a(val);
