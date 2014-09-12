@@ -1,4 +1,5 @@
 mod cpu;
+mod gpu;
 mod memory;
 mod rom;
 
@@ -6,7 +7,8 @@ fn main() {
     let args = std::os::args();
     let path = Path::new(args[1].clone());
     let rom = rom::Rom::from_path(&path);
-    let memory = memory::Memory::new(rom);
+    let gpu = gpu::Gpu::new();
+    let memory = memory::Memory::new(rom, gpu);
     let mut cpu = cpu::Cpu::new(memory);
 
     println!("Catridge type: {:#04X}", cpu.memory.rom.catrigde_type());

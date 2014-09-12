@@ -1,16 +1,19 @@
+use gpu;
 use rom;
 
 pub struct Memory {
     pub rom: rom::Rom,
+    pub gpu: gpu::Gpu,
     ram: [u8, ..0x4000],
     hram: [u8, ..0x79],
     ie: u8
 }
 
 impl Memory {
-    pub fn new(rom: rom::Rom) -> Memory {
+    pub fn new(rom: rom::Rom, gpu: gpu::Gpu) -> Memory {
         Memory {
             rom: rom,
+            gpu: gpu,
             ram: [0x00, ..0x4000],
             hram: [0x00, ..0x79],
             ie: 0x00
@@ -20,20 +23,14 @@ impl Memory {
     pub fn read_byte(&self, address: u16) -> u8 {
         match address {
             0x0000..0x7FFF => self.rom.bytes[address as uint],
-            0x8000..0x9FFF => {
-                print!("Video RAM not implemented!");
-                0x00
-            },
+            0x8000..0x9FFF => self.gpu.vram[address as uint - 0x8000],
             0xA000..0xBFFF => {
                 print!("External RAM not implemented!");
                 0x00
             },
             0xC000..0xDFFF => self.ram[address as uint - 0xC000],
             0xE000..0xFDFF => self.ram[address as uint - 0xE000],
-            0xFE00..0xFE9F => {
-                print!("Sprite attribute table not implemented!");
-                0x00
-            },
+            0xFE00..0xFE9F => self.gpu.oam[address as uint - 0xFE00],
             0xFEA0..0xFEFF => fail!("0xFEA0..0xFEFF segment is no usable"),
             0xFF00..0xFF7F => {
                 print!("I/O ports not implemented!");
@@ -51,7 +48,7 @@ impl Memory {
                 fail!("Address not writable in MBC0: {:#06x}", address);
             },
             0x8000..0x9FFF => {
-                print!("Video RAM not implemented!");
+                self.gpu.vram[address as uint - 0x8000];
             },
             0xA000..0xBFFF => {
                 print!("External RAM not implemented!");
@@ -63,7 +60,7 @@ impl Memory {
                 self.ram[address as uint - 0xE000] = value;
             },
             0xFE00..0xFE9F => {
-                print!("Sprite attribute table not implemented!");
+                self.gpu.oam[address as uint - 0xFE00] = value;
             },
             0xFEA0..0xFEFF => fail!("0xFEA0..0xFEFF segment is no usable"),
             0xFF00..0xFF7F => {
