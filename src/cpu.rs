@@ -29,7 +29,7 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    8,16,12,16,12,16, 8,16, 8,16,12, 0,12,24, 8,16, // 0xC0
+    8,16,12,16,12,16, 8,16, 8,16,12, 8,12,24, 8,16, // 0xC0
     8,16,12, 0,12,16, 8,16, 8, 0,12, 0,12, 0, 8,16, // 0xD0
    12,16, 8, 0, 0,16, 8,16, 0, 4,16, 0, 0, 0, 8,16, // 0xE0
    12,16, 8, 4, 0,16, 8,16, 0, 0,16, 4, 0, 0, 8,16, // 0xF0
@@ -776,7 +776,9 @@ impl Cpu {
                     self.cycles += 4;
                 }
             },
-
+            0xCB => { // CB prefix instructions
+                self.step_cb();
+            },
             0xCC => { // CALL Z,nn
                 let addr = self.read_next_word();
 
@@ -976,6 +978,14 @@ impl Cpu {
         self.cycles += CPU_CYCLES[opcode as uint];
 
         self.print_info();
+    }
+
+    fn step_cb(&mut self) {
+        let opcode = self.read_next_byte();
+
+        match opcode {
+            _ => fail!("Opcode not implemented: 0xCB {:#04X}", opcode)
+        }
     }
 
     fn print_info(&self) {
