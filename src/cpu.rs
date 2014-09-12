@@ -984,6 +984,286 @@ impl Cpu {
         let opcode = self.read_next_byte();
 
         match opcode {
+            // BIT 0,R
+            0x40 => {
+                let val = self.b;
+                self.bit(val, 0b0000_0001)
+            },
+            0x41 => {
+                let val = self.c;
+                self.bit(val, 0b0000_0001)
+            },
+            0x42 => {
+                let val = self.d;
+                self.bit(val, 0b0000_0001)
+            },
+            0x43 => {
+                let val = self.e;
+                self.bit(val, 0b0000_0001)
+            },
+            0x44 => {
+                let val = self.h;
+                self.bit(val, 0b0000_0001)
+            },
+            0x45 => {
+                let val = self.l;
+                self.bit(val, 0b0000_0001)
+            },
+            0x46 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0000_0001);
+                self.pc += 8;
+            },
+            0x47 => {
+                let val = self.a;
+                self.bit(val, 0b0000_0001)
+            },
+            // BIT 1,R
+            0x48 => {
+                let val = self.b;
+                self.bit(val, 0b0000_0010)
+            },
+            0x49 => {
+                let val = self.c;
+                self.bit(val, 0b0000_0010)
+            },
+            0x4A => {
+                let val = self.d;
+                self.bit(val, 0b0000_0010)
+            },
+            0x4B => {
+                let val = self.e;
+                self.bit(val, 0b0000_0010)
+            },
+            0x4C => {
+                let val = self.h;
+                self.bit(val, 0b0000_0010)
+            },
+            0x4D => {
+                let val = self.l;
+                self.bit(val, 0b0000_0010)
+            },
+            0x4E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0000_0010);
+                self.pc += 8;
+            },
+            0x4F => {
+                let val = self.a;
+                self.bit(val, 0b0000_0010)
+            },
+            // BIT 2,R
+            0x50 => {
+                let val = self.b;
+                self.bit(val, 0b0000_0100)
+            },
+            0x51 => {
+                let val = self.c;
+                self.bit(val, 0b0000_0100)
+            },
+            0x52 => {
+                let val = self.d;
+                self.bit(val, 0b0000_0100)
+            },
+            0x53 => {
+                let val = self.e;
+                self.bit(val, 0b0000_0100)
+            },
+            0x54 => {
+                let val = self.h;
+                self.bit(val, 0b0000_0100)
+            },
+            0x55 => {
+                let val = self.l;
+                self.bit(val, 0b0000_0100)
+            },
+            0x56 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0000_0100);
+                self.pc += 8;
+            },
+            0x57 => {
+                let val = self.a;
+                self.bit(val, 0b0000_0100)
+            },
+            // BIT 3,R
+            0x58 => {
+                let val = self.b;
+                self.bit(val, 0b0000_1000)
+            },
+            0x59 => {
+                let val = self.c;
+                self.bit(val, 0b0000_1000)
+            },
+            0x5A => {
+                let val = self.d;
+                self.bit(val, 0b0000_1000)
+            },
+            0x5B => {
+                let val = self.e;
+                self.bit(val, 0b0000_1000)
+            },
+            0x5C => {
+                let val = self.h;
+                self.bit(val, 0b0000_1000)
+            },
+            0x5D => {
+                let val = self.l;
+                self.bit(val, 0b0000_1000)
+            },
+            0x5E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0000_1000);
+                self.pc += 8;
+            },
+            0x5F => {
+                let val = self.a;
+                self.bit(val, 0b0000_1000)
+            },
+            // BIT 4,R
+            0x60 => {
+                let val = self.b;
+                self.bit(val, 0b0001_0000)
+            },
+            0x61 => {
+                let val = self.c;
+                self.bit(val, 0b0001_0000)
+            },
+            0x62 => {
+                let val = self.d;
+                self.bit(val, 0b0001_0000)
+            },
+            0x63 => {
+                let val = self.e;
+                self.bit(val, 0b0001_0000)
+            },
+            0x64 => {
+                let val = self.h;
+                self.bit(val, 0b0001_0000)
+            },
+            0x65 => {
+                let val = self.l;
+                self.bit(val, 0b0001_0000)
+            },
+            0x66 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0001_0000);
+                self.pc += 8;
+            },
+            0x67 => {
+                let val = self.a;
+                self.bit(val, 0b0001_0000)
+            },
+            // BIT 5,R
+            0x68 => {
+                let val = self.b;
+                self.bit(val, 0b0010_0000)
+            },
+            0x69 => {
+                let val = self.c;
+                self.bit(val, 0b0010_0000)
+            },
+            0x6A => {
+                let val = self.d;
+                self.bit(val, 0b0010_0000)
+            },
+            0x6B => {
+                let val = self.e;
+                self.bit(val, 0b0010_0000)
+            },
+            0x6C => {
+                let val = self.h;
+                self.bit(val, 0b0010_0000)
+            },
+            0x6D => {
+                let val = self.l;
+                self.bit(val, 0b0010_0000)
+            },
+            0x6E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0010_0000);
+                self.pc += 8;
+            },
+            0x6F => {
+                let val = self.a;
+                self.bit(val, 0b0010_0000)
+            },
+            // BIT 4,R
+            0x70 => {
+                let val = self.b;
+                self.bit(val, 0b0100_0000)
+            },
+            0x71 => {
+                let val = self.c;
+                self.bit(val, 0b0100_0000)
+            },
+            0x72 => {
+                let val = self.d;
+                self.bit(val, 0b0100_0000)
+            },
+            0x73 => {
+                let val = self.e;
+                self.bit(val, 0b0100_0000)
+            },
+            0x74 => {
+                let val = self.h;
+                self.bit(val, 0b0100_0000)
+            },
+            0x75 => {
+                let val = self.l;
+                self.bit(val, 0b0100_0000)
+            },
+            0x76 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b0100_0000);
+                self.pc += 8;
+            },
+            0x77 => {
+                let val = self.a;
+                self.bit(val, 0b0100_0000)
+            },
+            // BIT 5,R
+            0x78 => {
+                let val = self.b;
+                self.bit(val, 0b1000_0000)
+            },
+            0x79 => {
+                let val = self.c;
+                self.bit(val, 0b1000_0000)
+            },
+            0x7A => {
+                let val = self.d;
+                self.bit(val, 0b1000_0000)
+            },
+            0x7B => {
+                let val = self.e;
+                self.bit(val, 0b1000_0000)
+            },
+            0x7C => {
+                let val = self.h;
+                self.bit(val, 0b1000_0000)
+            },
+            0x7D => {
+                let val = self.l;
+                self.bit(val, 0b1000_0000)
+            },
+            0x7E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.bit(val, 0b1000_0000);
+                self.pc += 8;
+            },
+            0x7F => {
+                let val = self.a;
+                self.bit(val, 0b1000_0000)
+            },
             // RES 0,R
             0x80 => { self.b &= !0b0000_0001 },
             0x81 => { self.c &= !0b0000_0001 },
@@ -1371,6 +1651,12 @@ impl Cpu {
     fn push(&mut self, value: u16) {
         self.memory.write_word(self.sp, value);
         self.sp -= 2;
+    }
+
+    fn bit(&mut self, value: u8, mask: u8) {
+        self.set_flag(Z_FLAG, value & mask == 0x00);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, true);
     }
 
     fn af(&self) -> u16 {
