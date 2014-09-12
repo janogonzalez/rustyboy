@@ -700,8 +700,7 @@ impl Cpu {
             },
             0xC0 => { // RET NZ
                 if !self.is_set(Z_FLAG) {
-                    let incr = self.memory.read_word(self.sp);
-                    self.pc += incr;
+                    self.pc = self.memory.read_word(self.sp);
                     self.sp += 2;
                     self.cycles += 12;
                 }
@@ -733,8 +732,7 @@ impl Cpu {
 
             0xC8 => { // RET Z
                 if self.is_set(Z_FLAG) {
-                    let incr = self.memory.read_word(self.sp);
-                    self.pc += incr;
+                    self.pc = self.memory.read_word(self.sp);
                     self.sp += 2;
                     self.cycles += 12;
                 }
@@ -756,8 +754,7 @@ impl Cpu {
 
             0xD0 => { // RET NC
                 if !self.is_set(C_FLAG) {
-                    let incr = self.memory.read_word(self.sp);
-                    self.pc += incr;
+                    self.pc = self.memory.read_word(self.sp);
                     self.sp += 2;
                     self.cycles += 12;
                 }
@@ -786,8 +783,7 @@ impl Cpu {
 
             0xD8 => { // RET C
                 if self.is_set(C_FLAG) {
-                    let incr = self.memory.read_word(self.sp);
-                    self.pc += incr;
+                    self.pc = self.memory.read_word(self.sp);
                     self.sp += 2;
                     self.cycles += 12;
                 }
