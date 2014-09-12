@@ -1039,13 +1039,13 @@ impl Cpu {
 
     fn pop(&mut self) -> u16 {
         let result = self.memory.read_word(self.sp);
-        self.sp -= 2;
+        self.sp += 2;
         result
     }
 
     fn push(&mut self, value: u16) {
         self.memory.write_word(self.sp, value);
-        self.sp += 2;
+        self.sp -= 2;
     }
 
     fn af(&self) -> u16 {
