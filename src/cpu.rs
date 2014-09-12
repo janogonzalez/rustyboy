@@ -19,8 +19,8 @@ static CPU_CYCLES: [uint, ..256] = [
 //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
     4,12, 8, 8, 4, 4, 8, 4,20, 8, 8, 8, 4, 4, 8, 4, // 0x00
     0,12, 8, 8, 4, 4, 8, 4,12, 8, 8, 8, 4, 4, 8, 4, // 0x10
-    8,12, 8, 8, 4, 4, 8, 0, 8, 8, 8, 8, 4, 4, 8, 0, // 0x20
-    8,12, 8, 8,12,12,12, 0, 8, 8, 8, 8, 4, 4, 8, 0, // 0x30
+    8,12, 8, 8, 4, 4, 8, 0, 8, 8, 8, 8, 4, 4, 8, 4, // 0x20
+    8,12, 8, 8,12,12,12, 4, 8, 8, 8, 8, 4, 4, 8, 4, // 0x30
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x40
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x50
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x60
@@ -280,7 +280,12 @@ impl Cpu {
             0x2E => { // LD L,n
                 self.l = self.read_next_byte();
             },
+            0x2F => { // CPL
+                self.a = !self.a;
 
+                self.set_flag(N_FLAG, true);
+                self.set_flag(H_FLAG, true);
+            },
             0x30 => { // JR NC,+/-n
                 let incr = self.read_next_byte() as i8;
                 if !self.is_set(C_FLAG) {
@@ -317,7 +322,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.memory.write_byte(addr, val);
             },
-
+            0x37 => { // SCF
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, false);
+                self.set_flag(C_FLAG, true);
+            },
             0x38 => { // JR C,+/-n
                 let incr = self.read_next_byte() as i8;
                 if self.is_set(C_FLAG) {
@@ -348,7 +357,12 @@ impl Cpu {
             0x3E => { // LD A,n
                 self.a = self.read_next_byte();
             },
-
+            0x3F => { // CCF
+                let c = self.is_set(C_FLAG);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, false);
+                self.set_flag(C_FLAG, !c);
+            },
             // LD B,...
             0x40 => { self.b = self.b; },
             0x41 => { self.b = self.c; },
