@@ -29,9 +29,9 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    8,16, 0,16, 0,16, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xC0
-    8,16, 0, 0, 0,16, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xD0
-   12,16, 8, 0, 0,16, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xE0
+    8,16,12,16, 0,16, 8, 0, 8, 0,12, 0, 0, 0, 8, 0, // 0xC0
+    8,16,12, 0, 0,16, 8, 0, 8, 0,12, 0, 0, 0, 8, 0, // 0xD0
+   12,16, 8, 0, 0,16, 8, 0, 0, 4,16, 0, 0, 0, 8, 0, // 0xE0
    12,16, 8, 4, 0,16, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
 ];
 
@@ -710,7 +710,14 @@ impl Cpu {
                 let value = self.pop();
                 self.set_bc(value);
             },
+            0xC2 => { // JP NZ,nn
+                let addr = self.read_next_word();
 
+                if !self.is_set(Z_FLAG) {
+                    self.pc = addr;
+                    self.cycles += 4;
+                }
+            },
             0xC3 => { // JP nn
                 self.pc = self.read_next_word();
             },
@@ -733,6 +740,15 @@ impl Cpu {
                 }
             },
 
+            0xCA => { // JP Z,nn
+                let addr = self.read_next_word();
+
+                if self.is_set(Z_FLAG) {
+                    self.pc = addr;
+                    self.cycles += 4;
+                }
+            },
+
             0xCE => { // ADC A,n
                 let val = self.read_next_byte();
                 self.adc_a(val);
@@ -750,6 +766,14 @@ impl Cpu {
                 let value = self.pop();
                 self.set_de(value);
             },
+            0xD2 => { // JP NC,nn
+                let addr = self.read_next_word();
+
+                if !self.is_set(C_FLAG) {
+                    self.pc = addr;
+                    self.cycles += 4;
+                }
+            },
 
             0xD5 => { // PUSH DE
                 let value = self.de();
@@ -766,6 +790,15 @@ impl Cpu {
                     self.pc += incr;
                     self.sp += 2;
                     self.cycles += 12;
+                }
+            },
+
+            0xDA => { // JP C,nn
+                let addr = self.read_next_word();
+
+                if self.is_set(C_FLAG) {
+                    self.pc = addr;
+                    self.cycles += 4;
                 }
             },
 
@@ -796,6 +829,9 @@ impl Cpu {
                 self.and_a(val);
             },
 
+            0xE9 => {
+                self.pc = self.hl();
+            },
             0xEA => { // LD (nn),A
                 let addr = self.read_next_word();
                 self.memory.write_byte(addr, self.a);
