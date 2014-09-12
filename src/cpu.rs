@@ -29,10 +29,10 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    8, 0, 0,16, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xC0
-    8, 0, 0, 0, 0, 0, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xD0
-   12, 0, 8, 0, 0, 0, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xE0
-   12, 0, 8, 4, 0, 0, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
+    8,16, 0,16, 0,16, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xC0
+    8,16, 0, 0, 0,16, 8, 0, 8, 0, 0, 0, 0, 0, 8, 0, // 0xD0
+   12,16, 8, 0, 0,16, 8, 0, 0, 0,16, 0, 0, 0, 8, 0, // 0xE0
+   12,16, 8, 4, 0,16, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -706,11 +706,19 @@ impl Cpu {
                     self.cycles += 12;
                 }
             },
+            0xC1 => { // POP BC
+                let value = self.pop();
+                self.set_bc(value);
+            },
 
             0xC3 => { // JP nn
                 self.pc = self.read_next_word();
             },
 
+            0xC5 => { // PUSH BC
+                let value = self.bc();
+                self.push(value);
+            },
             0xC6 => { // ADD A,n
                 let val = self.read_next_byte();
                 self.add_a(val);
@@ -738,7 +746,15 @@ impl Cpu {
                     self.cycles += 12;
                 }
             },
+            0xD1 => { // POP DE
+                let value = self.pop();
+                self.set_de(value);
+            },
 
+            0xD5 => { // PUSH DE
+                let value = self.de();
+                self.push(value);
+            },
             0xD6 => { // SUB A,n
                 let val = self.read_next_byte();
                 self.sub_a(val);
@@ -762,12 +778,19 @@ impl Cpu {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.memory.write_byte(addr, self.a);
             },
-
+            0xE1 => { // POP HL
+                let value = self.pop();
+                self.set_hl(value);
+            },
             0xE2 => { // LD (0xFF00+C),A
                 let addr = 0xFF00 + self.c as u16;
                 self.memory.write_byte(addr, self.a);
             },
 
+            0xE5 => { // PUSH HL
+                let value = self.hl();
+                self.push(value);
+            },
             0xE6 => { // AND A,n
                 let val = self.read_next_byte();
                 self.and_a(val);
@@ -787,7 +810,10 @@ impl Cpu {
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.a = self.memory.read_byte(addr);
             },
-
+            0xF1 => { // POP AF
+                let value = self.pop();
+                self.set_af(value);
+            },
             0xF2 => { // LD A,(0xFF00+C)
                 let addr = 0xFF00 + self.c as u16;
                 self.a = self.memory.read_byte(addr);
@@ -796,6 +822,10 @@ impl Cpu {
                 print!("implement interrupts stuff... ");
             },
 
+            0xF5 => { // PUSH AF
+                let value = self.af();
+                self.push(value);
+            },
             0xF6 => { // OR A,n
                 let val = self.read_next_byte();
                 self.or_a(val);
@@ -971,6 +1001,21 @@ impl Cpu {
         self.set_flag(C_FLAG, a < value);
     }
 
+    fn pop(&mut self) -> u16 {
+        let result = self.memory.read_word(self.sp);
+        self.sp -= 2;
+        result
+    }
+
+    fn push(&mut self, value: u16) {
+        self.memory.write_word(self.sp, value);
+        self.sp += 2;
+    }
+
+    fn af(&self) -> u16 {
+        self.a as u16 << 8 | self.f as u16
+    }
+
     fn bc(&self) -> u16 {
         self.b as u16 << 8 | self.c as u16
     }
@@ -981,6 +1026,11 @@ impl Cpu {
 
     fn hl(&self) -> u16 {
         self.h as u16 << 8 | self.l as u16
+    }
+
+    fn set_af(&mut self, value: u16) {
+        self.a = (value >> 8) as u8;
+        self.f = (value & 0x00F0) as u8;
     }
 
     fn set_bc(&mut self, value: u16) {
