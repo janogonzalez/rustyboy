@@ -29,10 +29,10 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0x90
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xA0
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
-    8,16,12,16,12,16, 8, 0, 8,16,12, 0,12,24, 8, 0, // 0xC0
-    8,16,12, 0,12,16, 8, 0, 8, 0,12, 0,12, 0, 8, 0, // 0xD0
-   12,16, 8, 0, 0,16, 8, 0, 0, 4,16, 0, 0, 0, 8, 0, // 0xE0
-   12,16, 8, 4, 0,16, 8, 0, 0, 0,16, 4, 0, 0, 8, 0, // 0xF0
+    8,16,12,16,12,16, 8,16, 8,16,12, 0,12,24, 8,16, // 0xC0
+    8,16,12, 0,12,16, 8,16, 8, 0,12, 0,12, 0, 8,16, // 0xD0
+   12,16, 8, 0, 0,16, 8,16, 0, 4,16, 0, 0, 0, 8,16, // 0xE0
+   12,16, 8, 4, 0,16, 8,16, 0, 0,16, 4, 0, 0, 8,16, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -738,7 +738,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.add_a(val);
             },
-
+            0xC7 => { // RST 00
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0000;
+            },
             0xC8 => { // RET Z
                 if self.is_set(Z_FLAG) {
                     self.pc = self.memory.read_word(self.sp);
@@ -750,7 +754,6 @@ impl Cpu {
                 self.pc = self.memory.read_word(self.sp);
                 self.sp += 2;
             },
-
             0xCA => { // JP Z,nn
                 let addr = self.read_next_word();
 
@@ -780,7 +783,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.adc_a(val);
             },
-
+            0xCF => { // RST 08
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0008;
+            },
             0xD0 => { // RET NC
                 if !self.is_set(C_FLAG) {
                     self.pc = self.memory.read_word(self.sp);
@@ -819,7 +826,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.sub_a(val);
             },
-
+            0xD7 => { // RST 10
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0010;
+            },
             0xD8 => { // RET C
                 if self.is_set(C_FLAG) {
                     self.pc = self.memory.read_word(self.sp);
@@ -850,7 +861,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.sbc_a(val);
             },
-
+            0xDF => { // RST 18
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0018;
+            },
             0xE0 => { // LD (0xFF00+n),A
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.memory.write_byte(addr, self.a);
@@ -872,6 +887,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.and_a(val);
             },
+            0xE7 => { // RST 20
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0020;
+            },
 
             0xE9 => {
                 self.pc = self.hl();
@@ -885,7 +905,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.xor_a(val);
             },
-
+            0xEF => { // RST 28
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0028;
+            },
             0xF0 => { // LD A,(0xFF00+n)
                 let addr = 0xFF00 + self.read_next_byte() as u16;
                 self.a = self.memory.read_byte(addr);
@@ -910,6 +934,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.or_a(val);
             },
+            0xF7 => { // RST 30
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0030;
+            },
 
             0xFA => { // LD A,(nn)
                 let addr = self.read_next_word();
@@ -922,7 +951,11 @@ impl Cpu {
                 let val = self.read_next_byte();
                 self.cp_a(val);
             },
-
+            0xFF => { // RST 38
+                self.sp -= 2;
+                self.memory.write_word(self.sp, self.pc);
+                self.pc = 0x0038;
+            },
             _ => fail!("Opcode not implemented: {:#04X}", opcode)
         }
 
