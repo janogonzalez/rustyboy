@@ -984,6 +984,230 @@ impl Cpu {
         let opcode = self.read_next_byte();
 
         match opcode {
+            // RES 0,R
+            0x80 => { self.b &= !0b0000_0001 },
+            0x81 => { self.c &= !0b0000_0001 },
+            0x82 => { self.d &= !0b0000_0001 },
+            0x83 => { self.e &= !0b0000_0001 },
+            0x84 => { self.h &= !0b0000_0001 },
+            0x85 => { self.l &= !0b0000_0001 },
+            0x86 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0000_0001);
+                self.pc += 8;
+            },
+            0x87 => { self.a &= !0b0000_0001 },
+            // RES 1,R
+            0x88 => { self.b &= !0b0000_0010 },
+            0x89 => { self.c &= !0b0000_0010 },
+            0x8A => { self.d &= !0b0000_0010 },
+            0x8B => { self.e &= !0b0000_0010 },
+            0x8C => { self.h &= !0b0000_0010 },
+            0x8D => { self.l &= !0b0000_0010 },
+            0x8E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0000_0010);
+                self.pc += 8;
+            },
+            0x8F => { self.a &= !0b0000_0010 },
+            // RES 2,R
+            0x90 => { self.b &= !0b0000_0100 },
+            0x91 => { self.c &= !0b0000_0100 },
+            0x92 => { self.d &= !0b0000_0100 },
+            0x93 => { self.e &= !0b0000_0100 },
+            0x94 => { self.h &= !0b0000_0100 },
+            0x95 => { self.l &= !0b0000_0100 },
+            0x96 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0000_0100);
+                self.pc += 8;
+            },
+            0x97 => { self.a &= !0b0000_0100 },
+            // RES 3,R
+            0x98 => { self.b &= !0b0000_1000 },
+            0x99 => { self.c &= !0b0000_1000 },
+            0x9A => { self.d &= !0b0000_1000 },
+            0x9B => { self.e &= !0b0000_1000 },
+            0x9C => { self.h &= !0b0000_1000 },
+            0x9D => { self.l &= !0b0000_1000 },
+            0x9E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0000_1000);
+                self.pc += 8;
+            },
+            0x9F => { self.a &= !0b0000_1000 },
+            // RES 4,R
+            0xA0 => { self.b &= !0b0001_0000 },
+            0xA1 => { self.c &= !0b0001_0000 },
+            0xA2 => { self.d &= !0b0001_0000 },
+            0xA3 => { self.e &= !0b0001_0000 },
+            0xA4 => { self.h &= !0b0001_0000 },
+            0xA5 => { self.l &= !0b0001_0000 },
+            0xA6 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0001_0000);
+                self.pc += 8;
+            },
+            0xA7 => { self.a &= !0b0001_0000 },
+            // RES 5,R
+            0xA8 => { self.b &= !0b0010_0000 },
+            0xA9 => { self.c &= !0b0010_0000 },
+            0xAA => { self.d &= !0b0010_0000 },
+            0xAB => { self.e &= !0b0010_0000 },
+            0xAC => { self.h &= !0b0010_0000 },
+            0xAD => { self.l &= !0b0010_0000 },
+            0xAE => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0010_0000);
+                self.pc += 8;
+            },
+            0xAF => { self.a &= !0b0010_0000 },
+            // RES 6,R
+            0xB0 => { self.b &= !0b0100_0000 },
+            0xB1 => { self.c &= !0b0100_0000 },
+            0xB2 => { self.d &= !0b0100_0000 },
+            0xB3 => { self.e &= !0b0100_0000 },
+            0xB4 => { self.h &= !0b0100_0000 },
+            0xB5 => { self.l &= !0b0100_0000 },
+            0xB6 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b0100_0000);
+                self.pc += 8;
+            },
+            0xB7 => { self.a &= !0b0100_0000 },
+            // RES 7,R
+            0xB8 => { self.b &= !0b1000_0000 },
+            0xB9 => { self.c &= !0b1000_0000 },
+            0xBA => { self.d &= !0b1000_0000 },
+            0xBB => { self.e &= !0b1000_0000 },
+            0xBC => { self.h &= !0b1000_0000 },
+            0xBD => { self.l &= !0b1000_0000 },
+            0xBE => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val & !0b1000_0000);
+                self.pc += 8;
+            },
+            0xBF => { self.a &= !0b1000_0000 },
+            // SET 0,R
+            0xC0 => { self.b |= 0b0000_0001 },
+            0xC1 => { self.c |= 0b0000_0001 },
+            0xC2 => { self.d |= 0b0000_0001 },
+            0xC3 => { self.e |= 0b0000_0001 },
+            0xC4 => { self.h |= 0b0000_0001 },
+            0xC5 => { self.l |= 0b0000_0001 },
+            0xC6 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0000_0001);
+                self.pc += 8;
+            },
+            0xC7 => { self.a |= 0b0000_0001 },
+            // SET 1,R
+            0xC8 => { self.b |= 0b0000_0010 },
+            0xC9 => { self.c |= 0b0000_0010 },
+            0xCA => { self.d |= 0b0000_0010 },
+            0xCB => { self.e |= 0b0000_0010 },
+            0xCC => { self.h |= 0b0000_0010 },
+            0xCD => { self.l |= 0b0000_0010 },
+            0xCE => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0000_0010);
+                self.pc += 8;
+            },
+            0xCF => { self.a |= 0b0000_0010 },
+            // SET 2,R
+            0xD0 => { self.b |= 0b0000_0100 },
+            0xD1 => { self.c |= 0b0000_0100 },
+            0xD2 => { self.d |= 0b0000_0100 },
+            0xD3 => { self.e |= 0b0000_0100 },
+            0xD4 => { self.h |= 0b0000_0100 },
+            0xD5 => { self.l |= 0b0000_0100 },
+            0xD6 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0000_0100);
+                self.pc += 8;
+            },
+            0xD7 => { self.a |= 0b0000_0100 },
+            // SET 3,R
+            0xD8 => { self.b |= 0b0000_1000 },
+            0xD9 => { self.c |= 0b0000_1000 },
+            0xDA => { self.d |= 0b0000_1000 },
+            0xDB => { self.e |= 0b0000_1000 },
+            0xDC => { self.h |= 0b0000_1000 },
+            0xDD => { self.l |= 0b0000_1000 },
+            0xDE => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0000_1000);
+                self.pc += 8;
+            },
+            0xDF => { self.a |= 0b0000_1000 },
+            // SET 4,R
+            0xE0 => { self.b |= 0b0001_0000 },
+            0xE1 => { self.c |= 0b0001_0000 },
+            0xE2 => { self.d |= 0b0001_0000 },
+            0xE3 => { self.e |= 0b0001_0000 },
+            0xE4 => { self.h |= 0b0001_0000 },
+            0xE5 => { self.l |= 0b0001_0000 },
+            0xE6 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0001_0000);
+                self.pc += 8;
+            },
+            0xE7 => { self.a |= 0b0001_0000 },
+            // SET 5,R
+            0xE8 => { self.b |= 0b0010_0000 },
+            0xE9 => { self.c |= 0b0010_0000 },
+            0xEA => { self.d |= 0b0010_0000 },
+            0xEB => { self.e |= 0b0010_0000 },
+            0xEC => { self.h |= 0b0010_0000 },
+            0xED => { self.l |= 0b0010_0000 },
+            0xEE => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0010_0000);
+                self.pc += 8;
+            },
+            0xEF => { self.a |= 0b0010_0000 },
+            // SET 6,R
+            0xF0 => { self.b |= 0b0100_0000 },
+            0xF1 => { self.c |= 0b0100_0000 },
+            0xF2 => { self.d |= 0b0100_0000 },
+            0xF3 => { self.e |= 0b0100_0000 },
+            0xF4 => { self.h |= 0b0100_0000 },
+            0xF5 => { self.l |= 0b0100_0000 },
+            0xF6 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b0100_0000);
+                self.pc += 8;
+            },
+            0xF7 => { self.a |= 0b0100_0000 },
+            // SET 7,R
+            0xF8 => { self.b |= 0b1000_0000 },
+            0xF9 => { self.c |= 0b1000_0000 },
+            0xFA => { self.d |= 0b1000_0000 },
+            0xFB => { self.e |= 0b1000_0000 },
+            0xFC => { self.h |= 0b1000_0000 },
+            0xFD => { self.l |= 0b1000_0000 },
+            0xFE => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                self.memory.write_byte(addr, val | 0b1000_0000);
+                self.pc += 8;
+            },
+            0xFF => { self.a |= 0b1000_0000 },
             _ => fail!("Opcode not implemented: 0xCB {:#04X}", opcode)
         }
     }
