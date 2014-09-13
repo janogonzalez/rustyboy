@@ -23,18 +23,25 @@ impl Memory {
     pub fn read_byte(&self, address: u16) -> u8 {
         match address {
             0x0000..0x7FFF => self.rom.bytes[address as uint],
-            0x8000..0x9FFF => self.gpu.vram[address as uint - 0x8000],
+            0x8000..0x9FFF => self.gpu.read_byte(address),
             0xA000..0xBFFF => {
                 print!("External RAM not implemented!");
                 0x00
             },
             0xC000..0xDFFF => self.ram[address as uint - 0xC000],
             0xE000..0xFDFF => self.ram[address as uint - 0xE000],
-            0xFE00..0xFE9F => self.gpu.oam[address as uint - 0xFE00],
+            0xFE00..0xFE9F => self.gpu.read_byte(address),
             0xFEA0..0xFEFF => fail!("0xFEA0..0xFEFF segment is no usable"),
             0xFF00..0xFF7F => {
-                print!("I/O ports not implemented!");
-                0x00
+                match address {
+                    0xFF40..0xFF4B => {
+                        self.gpu.read_byte(address)
+                    },
+                    _ => {
+                        print!("Implement I/O ports stuff... ");
+                        0x00
+                    }
+                }
             },
             0xFF80..0xFFFE => self.hram[address as uint - 0xFF80],
             0xFFFF => self.ie,
@@ -48,7 +55,7 @@ impl Memory {
                 fail!("Address not writable in MBC0: {:#06x}", address);
             },
             0x8000..0x9FFF => {
-                self.gpu.vram[address as uint - 0x8000];
+                self.gpu.write_byte(address, value);
             },
             0xA000..0xBFFF => {
                 print!("External RAM not implemented!");
@@ -60,11 +67,16 @@ impl Memory {
                 self.ram[address as uint - 0xE000] = value;
             },
             0xFE00..0xFE9F => {
-                self.gpu.oam[address as uint - 0xFE00] = value;
+                self.gpu.write_byte(address, value);
             },
             0xFEA0..0xFEFF => fail!("0xFEA0..0xFEFF segment is no usable"),
             0xFF00..0xFF7F => {
-                print!("Implement I/O ports stuff... ");
+                match address {
+                    0xFF40..0xFF4B => {
+                        self.gpu.write_byte(address, value);
+                    },
+                    _ => print!("Implement I/O ports stuff... ")
+                }
             },
             0xFF80..0xFFFE => {
                 self.hram[address as uint - 0xFF80] = value;
