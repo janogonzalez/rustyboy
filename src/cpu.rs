@@ -12,6 +12,7 @@ pub struct Cpu {
     l: u8,
     pc: u16,
     sp: u16,
+    ime: bool,
     cycles: uint
 }
 
@@ -54,6 +55,7 @@ impl Cpu {
             l: 0x4D,
             pc: 0x0100,
             sp: 0xFFFE,
+            ime: false,
             cycles: 0
         }
     }
@@ -939,9 +941,8 @@ impl Cpu {
                 self.a = self.memory.read_byte(addr);
             }
             0xF3 => { // DI
-                print!("implement interrupts stuff... ");
+                self.ime = false;
             },
-
             0xF5 => { // PUSH AF
                 let value = self.af();
                 self.push(value);
@@ -961,7 +962,7 @@ impl Cpu {
                 self.a = self.memory.read_byte(addr);
             },
             0xFB => { // EI
-                print!("implement interrupts stuff... ");
+                self.ime = true;
             },
             0xFE => { // CP A,n
                 let val = self.read_next_byte();
