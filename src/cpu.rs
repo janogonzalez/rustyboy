@@ -41,6 +41,12 @@ static N_FLAG: u8 = 0b0100_0000;
 static H_FLAG: u8 = 0b0010_0000;
 static C_FLAG: u8 = 0b0001_0000;
 
+static VBLANK_IRQ: u8 = 0b0000_0001;
+static LCD_STAT_IRQ: u8 = 0b0000_0010;
+static TIMER_IRQ: u8 = 0b0000_0100;
+static SERIAL_IRQ: u8 = 0b0000_1000;
+static JOYPAD_IRQ: u8 = 0b0001_0000;
+
 impl Cpu {
     pub fn new(memory: memory::Memory) -> Cpu {
         Cpu {
@@ -1716,8 +1722,20 @@ impl Cpu {
         if self.is_set(flag) { 0x01 } else { 0x00 }
     }
 
+    fn handle_interrupts(&mut self) {
+        if self.ime {
+            let irq = self.memory.read_byte(0xFF0F) &
+                self.memory.read_byte(0xFFFF);
+
+            if irq == 0x00 { return; }
+
+            println!("IRQ: {:#08t}", irq);
+        }
+    }
+
     pub fn run(&mut self) {
         loop {
+            self.handle_interrupts();
             self.step();
         };
     }
