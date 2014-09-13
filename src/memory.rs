@@ -8,6 +8,7 @@ pub struct Memory {
     pub timer: timer::Timer,
     ram: [u8, ..0x4000],
     hram: [u8, ..0x79],
+    if_: u8,
     ie: u8
 }
 
@@ -19,6 +20,7 @@ impl Memory {
             timer: timer,
             ram: [0x00, ..0x4000],
             hram: [0x00, ..0x79],
+            if_: 0x00,
             ie: 0x00
         }
     }
@@ -39,6 +41,9 @@ impl Memory {
                 match address {
                     0xFF04..0xFF07 => {
                         self.timer.read_byte(address)
+                    },
+                    0xFF0F => {
+                        self.if_
                     },
                     0xFF40..0xFF4B => {
                         self.gpu.read_byte(address)
@@ -80,6 +85,9 @@ impl Memory {
                 match address {
                     0xFF04..0xFF07 => {
                         self.timer.write_byte(address, value);
+                    },
+                    0xFF0F => {
+                        self.if_ = value;
                     },
                     0xFF40..0xFF4B => {
                         self.gpu.write_byte(address, value);
