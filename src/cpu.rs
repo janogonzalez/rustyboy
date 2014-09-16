@@ -1031,6 +1031,42 @@ impl Cpu {
                 let val = self.a;
                 self.a = self.rlc(val);
             },
+            // RRC R
+            0x08 => {
+                let val = self.b;
+                self.b = self.rrc(val);
+            },
+            0x09 => {
+                let val = self.c;
+                self.c = self.rrc(val);
+            },
+            0x0A => {
+                let val = self.d;
+                self.d = self.rrc(val);
+            },
+            0x0B => {
+                let val = self.e;
+                self.e = self.rrc(val);
+            },
+            0x0C => {
+                let val = self.h;
+                self.h = self.rrc(val);
+            },
+            0x0D => {
+                let val = self.l;
+                self.l = self.rrc(val);
+            },
+            0x0E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.rrc(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x0F => {
+                let val = self.a;
+                self.a = self.rrc(val);
+            },
             // BIT 0,R
             0x40 => {
                 let val = self.b;
@@ -1709,6 +1745,23 @@ impl Cpu {
 
         if value & 0x80 == 0x80 {
             result |= 0x01;
+            self.set_flag(C_FLAG, true);
+        } else {
+            self.set_flag(C_FLAG, false);
+        }
+
+        result
+    }
+
+    fn rrc(&mut self, value: u8) -> u8 {
+        let mut result = value >> 1;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+
+        if value & 0x01 == 0x01 {
+            result |= 0x80;
             self.set_flag(C_FLAG, true);
         } else {
             self.set_flag(C_FLAG, false);
