@@ -995,6 +995,42 @@ impl Cpu {
         let opcode = self.read_next_byte();
 
         match opcode {
+            // RLC R
+            0x00 => {
+                let val = self.b;
+                self.b = self.rlc(val);
+            },
+            0x01 => {
+                let val = self.c;
+                self.c = self.rlc(val);
+            },
+            0x02 => {
+                let val = self.d;
+                self.d = self.rlc(val);
+            },
+            0x03 => {
+                let val = self.e;
+                self.e = self.rlc(val);
+            },
+            0x04 => {
+                let val = self.h;
+                self.h = self.rlc(val);
+            },
+            0x05 => {
+                let val = self.l;
+                self.l = self.rlc(val);
+            },
+            0x06 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.rlc(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x07 => {
+                let val = self.a;
+                self.a = self.rlc(val);
+            },
             // BIT 0,R
             0x40 => {
                 let val = self.b;
@@ -1662,6 +1698,23 @@ impl Cpu {
     fn push(&mut self, value: u16) {
         self.memory.write_word(self.sp, value);
         self.sp -= 2;
+    }
+
+    fn rlc(&mut self, value: u8) -> u8 {
+        let mut result = value << 1;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+
+        if value & 0x80 == 0x80 {
+            result |= 0x01;
+            self.set_flag(C_FLAG, true);
+        } else {
+            self.set_flag(C_FLAG, false);
+        }
+
+        result
     }
 
     fn bit(&mut self, value: u8, mask: u8) {
