@@ -83,6 +83,9 @@ impl Memory {
             0xFEA0..0xFEFF => fail!("0xFEA0..0xFEFF segment is no usable"),
             0xFF00..0xFF7F => {
                 match address {
+                    0xFF01 => {
+                        println!("SB: {:c}", value as char);
+                    },
                     0xFF04..0xFF07 => {
                         self.timer.write_byte(address, value);
                     },
