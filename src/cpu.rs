@@ -1067,6 +1067,78 @@ impl Cpu {
                 let val = self.a;
                 self.a = self.rrc(val);
             },
+            // RL R
+            0x10 => {
+                let val = self.b;
+                self.b = self.rl(val);
+            },
+            0x11 => {
+                let val = self.c;
+                self.c = self.rl(val);
+            },
+            0x12 => {
+                let val = self.d;
+                self.d = self.rl(val);
+            },
+            0x13 => {
+                let val = self.e;
+                self.e = self.rl(val);
+            },
+            0x14 => {
+                let val = self.h;
+                self.h = self.rl(val);
+            },
+            0x15 => {
+                let val = self.l;
+                self.l = self.rl(val);
+            },
+            0x16 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.rl(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x17 => {
+                let val = self.a;
+                self.a = self.rl(val);
+            },
+            // RR R
+            0x18 => {
+                let val = self.b;
+                self.b = self.rr(val);
+            },
+            0x19 => {
+                let val = self.c;
+                self.c = self.rr(val);
+            },
+            0x1A => {
+                let val = self.d;
+                self.d = self.rr(val);
+            },
+            0x1B => {
+                let val = self.e;
+                self.e = self.rr(val);
+            },
+            0x1C => {
+                let val = self.h;
+                self.h = self.rr(val);
+            },
+            0x1D => {
+                let val = self.l;
+                self.l = self.rr(val);
+            },
+            0x1E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.rr(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x1F => {
+                let val = self.a;
+                self.a = self.rr(val);
+            },
             // BIT 0,R
             0x40 => {
                 let val = self.b;
@@ -1766,6 +1838,32 @@ impl Cpu {
         } else {
             self.set_flag(C_FLAG, false);
         }
+
+        result
+    }
+
+    fn rl(&mut self, value: u8) -> u8 {
+        let mut result = value << 1;
+
+        if self.is_set(C_FLAG) { result |= 0x01 }
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+        self.set_flag(C_FLAG, value & 0x80 == 0x80);
+
+        result
+    }
+
+    fn rr(&mut self, value: u8) -> u8 {
+        let mut result = value >> 1;
+
+        if self.is_set(C_FLAG) { result |= 0x80 }
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+        self.set_flag(C_FLAG, value & 0x01 == 0x01);
 
         result
     }
