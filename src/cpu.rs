@@ -1142,6 +1142,78 @@ impl Cpu {
                 let val = self.a;
                 self.a = self.rr(val);
             },
+            // SLA R
+            0x20 => {
+                let val = self.b;
+                self.b = self.sla(val);
+            },
+            0x21 => {
+                let val = self.c;
+                self.c = self.sla(val);
+            },
+            0x22 => {
+                let val = self.d;
+                self.d = self.sla(val);
+            },
+            0x23 => {
+                let val = self.e;
+                self.e = self.sla(val);
+            },
+            0x24 => {
+                let val = self.h;
+                self.h = self.sla(val);
+            },
+            0x25 => {
+                let val = self.l;
+                self.l = self.sla(val);
+            },
+            0x26 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.sla(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x27 => {
+                let val = self.a;
+                self.a = self.sla(val);
+            },
+            // SRA R
+            0x28 => {
+                let val = self.b;
+                self.b = self.sra(val);
+            },
+            0x29 => {
+                let val = self.c;
+                self.c = self.sra(val);
+            },
+            0x2A => {
+                let val = self.d;
+                self.d = self.sra(val);
+            },
+            0x2B => {
+                let val = self.e;
+                self.e = self.sra(val);
+            },
+            0x2C => {
+                let val = self.h;
+                self.h = self.sra(val);
+            },
+            0x2D => {
+                let val = self.l;
+                self.l = self.sra(val);
+            },
+            0x2E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.sra(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x2F => {
+                let val = self.a;
+                self.a = self.sra(val);
+            },
             // BIT 0,R
             0x40 => {
                 let val = self.b;
@@ -1867,6 +1939,40 @@ impl Cpu {
         self.set_flag(N_FLAG, false);
         self.set_flag(H_FLAG, false);
         self.set_flag(C_FLAG, value & 0x01 == 0x01);
+
+        result
+    }
+
+    fn sla(&mut self, value: u8) -> u8 {
+        let result = value << 1;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+
+        if value & 0x80 == 0x80 {
+            self.set_flag(C_FLAG, true);
+        } else {
+            self.set_flag(C_FLAG, false);
+        }
+
+        result
+    }
+
+    fn sra(&mut self, value: u8) -> u8 {
+        let mut result = value >> 1;
+
+        if value & 0x80 == 0x80 { result |= 0x80 }
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+
+        if value & 0x01 == 0x01 {
+            self.set_flag(C_FLAG, true);
+        } else {
+            self.set_flag(C_FLAG, false);
+        }
 
         result
     }
