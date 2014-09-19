@@ -32,8 +32,8 @@ static CPU_CYCLES: [uint, ..256] = [
     4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, // 0xB0
     8,12,12,16,12,16, 8,16, 8,16,12, 8,12,24, 8,16, // 0xC0
     8,12,12, 0,12,16, 8,16, 8,16,12, 0,12, 0, 8,16, // 0xD0
-   12,12, 8, 0, 0,16, 8,16, 0, 4,16, 0, 0, 0, 8,16, // 0xE0
-   12,12, 8, 4, 0,16, 8,16, 0, 8,16, 4, 0, 0, 8,16, // 0xF0
+   12,12, 8, 0, 0,16, 8,16,16, 4,16, 0, 0, 0, 8,16, // 0xE0
+   12,12, 8, 4, 0,16, 8,16,12, 8,16, 4, 0, 0, 8,16, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -905,7 +905,6 @@ impl Cpu {
                 let addr = 0xFF00 + self.c as u16;
                 self.memory.write_byte(addr, self.a);
             },
-
             0xE5 => { // PUSH HL
                 let value = self.hl();
                 self.push(value);
@@ -919,15 +918,25 @@ impl Cpu {
                 self.memory.write_word(self.sp, self.pc);
                 self.pc = 0x0020;
             },
+            0xE8 => { // LD SP,+/-n
+                let sp = self.sp;
+                let val = self.read_next_byte();
+                let result = (sp as i32 + val as i32) as u16;
 
-            0xE9 => {
+                self.set_flag(Z_FLAG, false);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, (sp & 0xF + val as u16 & 0xF) > 0xF);
+                self.set_flag(C_FLAG, (sp & 0xFF + val as u16 & 0xFF) > 0xFF);
+
+                self.sp = result;
+            },
+            0xE9 => { // JP HL
                 self.pc = self.hl();
             },
             0xEA => { // LD (nn),A
                 let addr = self.read_next_word();
                 self.memory.write_byte(addr, self.a);
-            }
-
+            },
             0xEE => { // XOR A,n
                 let val = self.read_next_byte();
                 self.xor_a(val);
@@ -965,7 +974,18 @@ impl Cpu {
                 self.memory.write_word(self.sp, self.pc);
                 self.pc = 0x0030;
             },
+            0xF8 => { // LD HL,SP+/-n
+                let sp = self.sp;
+                let val = self.read_next_byte();
+                let result = (sp as i32 + val as i32) as u16;
 
+                self.set_flag(Z_FLAG, false);
+                self.set_flag(N_FLAG, false);
+                self.set_flag(H_FLAG, (sp & 0xF + val as u16 & 0xF) > 0xF);
+                self.set_flag(C_FLAG, (sp & 0xFF + val as u16 & 0xFF) > 0xFF);
+
+                self.set_hl(result);
+            },
             0xF9 => { // LD SP,HL
                 let hl = self.hl();
                 self.sp = hl;
