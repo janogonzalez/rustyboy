@@ -33,7 +33,7 @@ static CPU_CYCLES: [uint, ..256] = [
     8,12,12,16,12,16, 8,16, 8,16,12, 8,12,24, 8,16, // 0xC0
     8,12,12, 0,12,16, 8,16, 8,16,12, 0,12, 0, 8,16, // 0xD0
    12,12, 8, 0, 0,16, 8,16, 0, 4,16, 0, 0, 0, 8,16, // 0xE0
-   12,12, 8, 4, 0,16, 8,16, 0, 0,16, 4, 0, 0, 8,16, // 0xF0
+   12,12, 8, 4, 0,16, 8,16, 0, 8,16, 4, 0, 0, 8,16, // 0xF0
 ];
 
 static Z_FLAG: u8 = 0b1000_0000;
@@ -831,7 +831,6 @@ impl Cpu {
                     self.cycles += 4;
                 }
             },
-
             0xD4 => { // CALL NC,nn
                 let addr = self.read_next_word();
 
@@ -967,6 +966,10 @@ impl Cpu {
                 self.pc = 0x0030;
             },
 
+            0xF9 => { // LD SP,HL
+                let hl = self.hl();
+                self.sp = hl;
+            },
             0xFA => { // LD A,(nn)
                 let addr = self.read_next_word();
                 self.a = self.memory.read_byte(addr);
