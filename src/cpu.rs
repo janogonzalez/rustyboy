@@ -1214,6 +1214,42 @@ impl Cpu {
                 let val = self.a;
                 self.a = self.sra(val);
             },
+            // swap R
+            0x30 => {
+                let val = self.b;
+                self.b = self.swap(val);
+            },
+            0x31 => {
+                let val = self.c;
+                self.c = self.swap(val);
+            },
+            0x32 => {
+                let val = self.d;
+                self.d = self.swap(val);
+            },
+            0x33 => {
+                let val = self.e;
+                self.e = self.swap(val);
+            },
+            0x34 => {
+                let val = self.h;
+                self.h = self.swap(val);
+            },
+            0x35 => {
+                let val = self.l;
+                self.l = self.swap(val);
+            },
+            0x36 => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.swap(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x37 => {
+                let val = self.a;
+                self.a = self.swap(val);
+            },
             // SLR R
             0x38 => {
                 let val = self.b;
@@ -2028,6 +2064,21 @@ impl Cpu {
 
         result
     }
+
+    fn swap(&mut self, value: u8) -> u8 {
+        let hi = (value >> 4) & 0x0F;
+        let lo = value & 0x0F;
+
+        let result = (lo << 4) | hi;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+        self.set_flag(H_FLAG, false);
+
+        result
+    }
+
     fn bit(&mut self, value: u8, mask: u8) {
         self.set_flag(Z_FLAG, value & mask == 0x00);
         self.set_flag(N_FLAG, false);
