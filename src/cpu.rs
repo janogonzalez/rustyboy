@@ -1214,6 +1214,42 @@ impl Cpu {
                 let val = self.a;
                 self.a = self.sra(val);
             },
+            // SLR R
+            0x38 => {
+                let val = self.b;
+                self.b = self.srl(val);
+            },
+            0x39 => {
+                let val = self.c;
+                self.c = self.srl(val);
+            },
+            0x3A => {
+                let val = self.d;
+                self.d = self.srl(val);
+            },
+            0x3B => {
+                let val = self.e;
+                self.e = self.srl(val);
+            },
+            0x3C => {
+                let val = self.h;
+                self.h = self.srl(val);
+            },
+            0x3D => {
+                let val = self.l;
+                self.l = self.srl(val);
+            },
+            0x3E => {
+                let addr = self.hl();
+                let val = self.memory.read_byte(addr);
+                let res = self.srl(val);
+                self.memory.write_byte(addr, res);
+                self.pc += 8;
+            },
+            0x3F => {
+                let val = self.a;
+                self.a = self.srl(val);
+            },
             // BIT 0,R
             0x40 => {
                 let val = self.b;
@@ -1977,6 +2013,21 @@ impl Cpu {
         result
     }
 
+    fn srl(&mut self, value: u8) -> u8 {
+        let result = value >> 1;
+
+        self.set_flag(Z_FLAG, result == 0);
+        self.set_flag(N_FLAG, false);
+        self.set_flag(H_FLAG, false);
+
+        if value & 0x01 == 0x01 {
+            self.set_flag(C_FLAG, true);
+        } else {
+            self.set_flag(C_FLAG, false);
+        }
+
+        result
+    }
     fn bit(&mut self, value: u8, mask: u8) {
         self.set_flag(Z_FLAG, value & mask == 0x00);
         self.set_flag(N_FLAG, false);
