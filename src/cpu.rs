@@ -69,7 +69,7 @@ impl Cpu {
     fn step(&mut self) {
         let opcode = self.read_next_byte();
 
-        print!("Executing: {:#04X} ", opcode);
+        print!("{:#04X}", opcode);
 
         match opcode {
             0x00 => { // NOP
@@ -1011,6 +1011,7 @@ impl Cpu {
 
         self.cycles += CPU_CYCLES[opcode as uint];
 
+        print!(" -> ");
         self.print_info();
     }
 
@@ -1821,9 +1822,9 @@ impl Cpu {
                             if self.is_set(H_FLAG) { "H" } else { "-" },
                             if self.is_set(C_FLAG) { "C" } else { "-" });
 
-        println!("<A = {:#04X}, B = {:#04X}, C = {:#04X}, D = {:#04X} \
-                   E = {:#04X}, H = {:#04X}, L = {:#04X}, FLAGS = {} \
-                   PC = {:#08X} SP = {:#08X} Cycles = {}>",
+        println!("[A: {:#04X} B: {:#04X} C: {:#04X} D: {:#04X} \
+                   E: {:#04X} H: {:#04X} L: {:#04X} FLAGS: {} \
+                   PC: {:#06X} SP: {:#06X} Cycles: {}]",
                  self.a, self.b, self.c, self.d, self.e, self.h, self.l,
                  flags, self.pc, self.sp, self.cycles);
     }

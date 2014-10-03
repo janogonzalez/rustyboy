@@ -13,6 +13,17 @@ impl Rom {
         }
     }
 
+    pub fn name(&self) -> String {
+        let name = self.bytes.
+            slice(0x134, 0x143).
+            iter().
+            take_while(|&n| *n > 0x0).
+            map(|&n| n).
+            collect::<Vec<u8>>();
+
+        String::from_utf8(name).unwrap()
+    }
+
     pub fn catrigde_type(&self) -> u8 {
         self.bytes[0x147]
     }
